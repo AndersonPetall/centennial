@@ -1,0 +1,25 @@
+Complete the following tasks and then create a short video to demonstrate your work.
+1) Install and run an Apache secure web server on your Linux OS.
+7 marks
+2) Configure your webserver to use the  public_html folder for all users.
+2 marks
+3) Create a simple web page in a user's public_html directory.
+2 marks
+4) Create a video and upload to demonstrate your server configuration.
+Instructions:
+1. Create a title slide deck that must include your Full Name, Student ID, and a current image of you.
+2. Record a video that captures your slide and your voice.
+a. You can use tools like OBS (https://obsproject.com/), Camtasia (https://www.techsmith.com/video-editor.html) to record your video
+b. You do not need to perform any post-processing or editing (but it would be nice).
+c. Ensure that your voice can be heard clearly and that your screen can also be seen clearly
+3. Upload your Video to YouTube (or other streaming video provider)
+a. You need to have a google account
+b. You need to create a YouTube channel
+c. No need to share your video publicly you can mark it as unlisted and distribute the link.
+In your video include:
+5) Change to the user/public_html directory and display the contents of the directory and then display the .htaccess file
+2 marks
+6) Navigate to the /etc/httpd/conf directory and show the configuration files that implement the htaccess
+1 mark
+7) Open a browser and display the index.html file
+1 mark
