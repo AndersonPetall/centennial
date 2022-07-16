@@ -1,0 +1,52 @@
+操作:su root
+解释:进入root模式
+
+操作:sudo yum install httpd -y
+解释:下载apache网页服务器
+
+操作:sudo systemctl start httpd
+解释:激活服务器
+
+操作:sudo systemctl enable httpd
+解释:设置服务器在开机运行
+
+操作:sudo systemctl status httpd
+解释:查看服务器的状态
+
+输入:sudo firewall-cmd ––permanent ––add-port=80/tcp
+提示: success
+输入:sudo firewall-cmd ––permanent ––add-port=443/tcp
+提示: success
+解释:开放防火墙,将网页公共文件夹开放给所有人
+输入: firewall-cmd ––reload
+提示: success
+解释:重载入服务器,确保设置更新且成立
+
+操作:sudo nano /etc/httpd/conf/httpd.conf  ==> Find the section `` and change AllowOverride None to AllowOverride All 
+解释:修改httpd.conf文件, 使得.htaccess文件可以创建
+操作:sudo systemctl restart httpd
+解释:重新载入系统  使得设置更改保存
+
+操作:/var/www/html/
+解释:进入网页公共文件夹
+操作:mkdir testForade1
+解释:创建文件夹
+操作:vi index.html  ==> <html></html>
+操作:sudo nano .htaccess
+解释:创建html网页和.htaccess文件
+
+
+reference:
+每个步骤:
+  https://blog.51cto.com/u_15328720/3391526
+  https://medium.com/@vi1996ash/steps-to-build-apache-web-server-docker-image-1a2f21504a8e
+.htaccess:
+  https://www.jb51.net/article/27304.htm
+  https://www.digitalocean.com/community/tutorials/how-to-use-the-htaccess-file
+  https://httpd.apache.org/docs/2.4/howto/htaccess.html
+  https://blog.csdn.net/weixin_35216188/article/details/116746718
+from teacher:
+  https://fedoramagazine.org/install-apache-web-server-fedora/
+  https://docs.fedoraproject.org/en-US/quick-docs/getting-started-with-apache-http-server/
+  https://httpd.apache.org/docs/2.4/howto/htaccess.html
+  
