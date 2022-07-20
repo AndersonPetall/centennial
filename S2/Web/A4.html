@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="Assignment4.css" />
+    <title>COMP125-Assignment4</title>
+  </head>
+  <!-- Xingjian REN  &   301231054    -->
+  <body>
+    <h1 id="title">COMP125-Assignment4</h1>
+    <hr />
+    <div>
+      <h2>Member Registration</h2>
+      <h2>Please complete all the fields below:</h2>
+      <table>
+        <tr>
+          <td>First Name:</td>
+          <td>
+            <label><input type="text" name="fname" id="fname" /></label>
+          </td>
+        </tr>
+        <tr>
+          <td>Last Name:</td>
+          <td>
+            <label><input type="text" name="lname" id="lname" /></label>
+          </td>
+        </tr>
+        <tr>
+          <td>Address:</td>
+          <td>
+            <label><input type="text" name="address" id="address" /></label>
+          </td>
+        </tr>
+        <tr>
+          <td>City:</td>
+          <td>
+            <label><input type="text" name="city" id="city" /></label>
+          </td>
+        </tr>
+        <tr>
+          <td>Postal Code:</td>
+          <td>
+            <label>
+              <input type="text" name="pcode" id="pcode" />
+              <p id="codeError"></p>
+            </label>
+          </td>
+        </tr>
+        <tr>
+          <td>Province:</td>
+          <td>
+            <label>
+              <input type="radio" name="province" value="QC" />QC
+              <input type="radio" name="province" value="ON" />ON
+              <input type="radio" name="province" value="MN" />MN
+              <input type="radio" name="province" value="SK" />SK
+              <input type="radio" name="province" value="AB" />AB
+              <input type="radio" name="province" value="BC" />BC
+            </label>
+          </td>
+        </tr>
+        <tr>
+          <td>Age:</td>
+          <td>
+            <label>
+              <input type="text" name="age" id="age" />
+              <p id="ageError"></p>
+            </label>
+          </td>
+        </tr>
+        <tr>
+          <td>Password:</td>
+          <td>
+            <label>
+              <input type="password" name="password" id="password" />
+              <p id="passwordError"></p>
+            </label>
+          </td>
+        </tr>
+        <tr>
+          <td>Confirm:</td>
+          <td>
+            <label>
+              <input type="password" name="confirm" id="confirm" />
+              <p id="confirmError"></p>
+            </label>
+          </td>
+        </tr>
+        <tr>
+          <td>Email:</td>
+          <td>
+            <label>
+              <input type="text" name="email" id="email" />
+              <p id="emailError"></p>
+            </label>
+          </td>
+        </tr>
+        <tr>
+          <td><button id="register">Register Now</button></td>
+          <td><button id="clear">Clear Form</button></td>
+        </tr>
+      </table>
+      <br /><br />
+    </div>
+    <hr id="last" />
+    <script type="text/javascript" src="Assignment4.js"></script>
+  </body>
+</html>
