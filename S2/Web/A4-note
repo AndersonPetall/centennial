@@ -1,1 +1,39 @@
+问题1: 正侧表达式 regular expression
+  表达式: /[A-Za-z]\d[A-Za-z]\d[A-Za-z]\d/
+  限定: a0a0a0 格式
+  表达式:/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/
+  限定: 带有@和. 其余全是数字和字母
+  表达式:/^(?=.*\d)(?=.*[A-Z]).{6,}$/
+  限定:至少有一个大写字母,最少六位
+  方程: 表达式.test(待测字符串)  ==> 返回Boolean
+
+
+问题2: string.replace()函数
+  stringA.replace('a','b'); 将字符串stringA中得第一个'a'换成'b;
+  stringA.replace(/a/g, "");将字符串stringA中得全部'a'换成'b;
+    stringA.replace(/ /g, "");消除字符串stringA中的全部空格
+    
+    
+问题3: 查询radio和恢复radio  ==>  radio的name保持一致,value不一致为多项单选
+  查询:
+    var provinceList = document.getElementsByName("province");
+    var province = "";
+    for (let i = 0; i < provinceList.length; ++i) {
+      if (provinceList[i].checked) {
+        province = provinceList[i].value;
+      }
+    }
+  恢复:
+    var provinceList = document.getElementsByName("province");
+    for (let i = 0; i < provinceList.length; ++i) {
+      if (provinceList[i].checked) {
+        provinceList[i].checked = false;
+      }
+    }
+    
+    
+问题4: value 和 innerHTML
+<p></p>     document.innherHTML = "fsdf";
+<input type=text>    var variable = document.value;
+
 
