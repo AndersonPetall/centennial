@@ -1,0 +1,32 @@
+canvas添加图片
+  const img = new Image();
+  img.src = './somephoto.jpg';
+
+canvas构建
+  var canvas = document.getElementById("mycanvas");
+  var cxt = canvas.getContext("2d");
+    function angule(a, b) {
+      cxt.clearRect(0, 0, canvas.width, canvas.height);
+      cxt.beginPath();
+      cxt.drawImage(img, a, b, wh, wh); //图像,x位置,y位置,宽,高
+      cxt.closePath();
+    }
+    
+网页载入运行
+  window.onload = function(){function_body}
+
+
+鼠标点击
+  canvas.onclick = funtion(e){
+    e = e || event;
+    //获取鼠标点击的位置
+    var px = e.offsetX; //px为鼠标在当前canvas上位置的X坐标
+    var py = e.offsetY; //py为鼠标在当前canvas上位置的Y坐标
+    //对比鼠标点击位置和图像位置
+    if(px)...if(py)  {}//判断XY的和图像为位置
+  }
+  
+  
+setInterval函数
+  setInterval(function(){function_body}, 20}
+  每隔20毫秒运行function一次
