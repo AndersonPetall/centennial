@@ -6,33 +6,18 @@ using System.Threading.Tasks;
 
 namespace ExpenseTracker.Models
 {
-    public class Expense
+    public class Record
     {
-        public string ExpenseId { get; set; }
-        public int Amount { get; set; }
-        public DateTime Date { get; set; }
-        public Record Record { get; set; }
-        public Categories Category { get; set; }
-        public string Description { get; set; }
-        public Expense()
+        public string Name { get; set; }
+        public Responsors Responsor { get; set; }
+        public override string ToString()
         {
-            this.ExpenseId = Guid.NewGuid().ToString();
+            return base.ToString();
         }
-        public Expense(int amount,DateTime date, Record record, string description):this()
+        public enum Responsors
         {
-            this.Amount = amount;
-            this.Date = date;
-            this.Record = record;
-            this.Description = description;
-        }
-        public enum Categories
-        {
-            grocery,
-            accommodation,
-            diet,
-            transportation,
-            necessities,
-            other
+            family,
+            individual
         }
     }
 }
