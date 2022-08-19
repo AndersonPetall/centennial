@@ -12,12 +12,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using ExpenseTracker.Models;
-using ExpenseTracker.Utilities;
-using static ExpenseTracker.Models.Expense;
-using static ExpenseTracker.Models.Record;
-
-namespace ExpenseTracker
+using BMIcalculator.Models;
+using BMIcalculator.Utilities;
+namespace BMIcalculator
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -29,87 +26,134 @@ namespace ExpenseTracker
             InitializeComponent();
             initial();
         }
-        public void ResetExpense(object sender, EventArgs e)
+        private void GenerateBMIColumns(object sender, EventArgs e)
         {
-            txtAmountExpense.Text = null;
-            dateExpense.SelectedDate = null;
-            txtNameExpense.Text=null;
-            comboResponsorExpense.SelectedItem = null;
-            comboCategoryExpense.SelectedItem = null;
-            txtDescriptionExpense.Text = null;
-        }
-        public void ResetSearch(object sender, EventArgs e)
-        {
-            txtAmountSearch.Text = null;
-            dateSearch.SelectedDate = null;
-            txtNameSearch.Text = null;
-            comboResponsorSearch.SelectedItem = null;
-            comboCategorySearch.SelectedItem = null;
-            txtExpenseID.Text = null;
-        }
-        public void CreateExpense(object sender, EventArgs e)
-        {
-            if(dateExpense.SelectedDate == null || 
-                comboCategoryExpense.SelectedItem == null||
-                comboResponsorExpense.SelectedItem == null ||
-                string.IsNullOrWhiteSpace(txtAmountExpense.Text) ||
-                string.IsNullOrWhiteSpace(txtNameExpense.Text) ||
-                string.IsNullOrWhiteSpace(txtDescriptionExpense.Text))
+            foreach (var column in ((DataGrid)sender).Columns)
             {
-                MessageBox.Show("Please input all needed values before creating the new account.", "Error!", MessageBoxButton.OK, MessageBoxImage.Error);
+                column.MinWidth = 79;
+                if (column.Header.ToString() == "Index")
+                {
+                    column.Visibility = Visibility.Hidden;
+                }
+            }
+        }
+        public void Reset(object sender, EventArgs e)
+        {
+            textName.Text = null;
+            date.SelectedDate = null;
+            comboType.SelectedItem = null;
+            textHeight.Text = null;
+            textWeight.Text = null;
+        }
+        public void Calculate(object sender, EventArgs e)
+        {
+            double height = 0, weight = 0;
+            if (date.SelectedDate == null ||
+                comboType.SelectedItem == null ||
+                string.IsNullOrWhiteSpace(textName.Text) ||
+                string.IsNullOrWhiteSpace(textHeight.Text) ||
+                string.IsNullOrWhiteSpace(textWeight.Text) ||
+                !Double.TryParse(textHeight.Text, out height) ||
+                !Double.TryParse(textWeight.Text, out weight))
+            {
+                MessageBox.Show("Please input all needed values in the correct format.", "Error!", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             else
             {
-                Record oneRecord = new Record();
-                oneRecord.Name = txtNameExpense.Text;
-                if (((ComboBoxItem)comboResponsorExpense.SelectedItem).Content.ToString() == "family") oneRecord.Responsor = Responsors.family;
-                else oneRecord.Responsor = Responsors.individual;
-                Expense oneExpense = new Expense(amount: Convert.ToInt32(txtAmountExpense.Text), date: (DateTime)dateExpense.SelectedDate, record: oneRecord, description: txtDescriptionExpense.Text);
-                if (((ComboBoxItem)comboCategoryExpense.SelectedItem).Content.ToString() == "grocery") oneExpense.Category = Categories.grocery;
-                else if (((ComboBoxItem)comboCategoryExpense.SelectedItem).Content.ToString() == "accommodation") oneExpense.Category = Categories.accommodation;
-                else if (((ComboBoxItem)comboCategoryExpense.SelectedItem).Content.ToString() == "diet") oneExpense.Category = Categories.diet;
-                else if (((ComboBoxItem)comboCategoryExpense.SelectedItem).Content.ToString() == "transportation") oneExpense.Category = Categories.transportation;
-                else if (((ComboBoxItem)comboCategoryExpense.SelectedItem).Content.ToString() == "necessities") oneExpense.Category = Categories.necessities;
-                else oneExpense.Category = Categories.other;
-                
+                BMI onebmi = new BMI();
+                onebmi.Name = textName.Text;
+                onebmi.Height = Convert.ToDouble(textHeight.Text);
+                onebmi.Weight = Convert.ToDouble(textWeight.Text);
+                onebmi.Date = date.SelectedDate;
+                onebmi.Index = Guid.NewGuid().ToString();
+                if (((ComboBoxItem)comboType.SelectedItem).Content.ToString() == "imperial")
+                {
+                    onebmi.Type = Models.Type.imperial;
+                    onebmi.result = onebmi.Weight / onebmi.Height / onebmi.Height * 703;
+                }
+                else
+                {
+                    onebmi.Type = Models.Type.metric;
+                    onebmi.result = onebmi.Weight / onebmi.Height / onebmi.Height;
+                }
                 try
                 {
-                    ExpenseService.Create(oneExpense);
-                    this.ResetExpense(sender, e);
-                    dataExpense.ItemsSource = null;
-                    dataExpense.ItemsSource = ExpenseService.GetAll();
-                    MessageBox.Show("Expense successfully created!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+                    BMIService.Create(onebmi);
+                    this.Reset(sender, e);
+                    dataBMI.ItemsSource = null;
+                    dataBMI.ItemsSource = BMIService.GetAll();
+                    MessageBox.Show("BMI successfully calculated!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message, "Error123!", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(ex.Message, "Error!", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
-        public void CreateSearch()
-        {
-            //if (dateSearch.SelectedDate == null ||
-            //    comboCategorySearch.SelectedItem == null ||
-            //    string.IsNullOrWhiteSpace(txtAmountSearch.Text) ||
-            //    string.IsNullOrWhiteSpace(txtNameSearch.Text) ||
-            //    string.IsNullOrWhiteSpace(txtResponsorSearch.Text) ||
-            //    string.IsNullOrWhiteSpace(txtDescriptionExpense.Text))
-            //{
-            //    MessageBox.Show("Please input all needed values before creating the new account.", "Error!", MessageBoxButton.OK, MessageBoxImage.Error);
-            //}
-            //else
-            //{
 
-            //}
+        public void Search(object sender, EventArgs e)
+        {
+            List<BMI> bmis = BMIService.GetAll();
+            double height = 0, weight = 0;
+            if (date.SelectedDate != null) bmis = BMIService.Search((DateTime)date.SelectedDate, bmis);
+            if (textName.Text != null) bmis = BMIService.Search(textName.Text, bmis);
+            if(!string.IsNullOrWhiteSpace(textWeight.Text) && Double.TryParse(textWeight.Text, out weight)) bmis = BMIService.Search(Convert.ToDouble(textWeight.Text), bmis, "aa");
+            if(!string.IsNullOrWhiteSpace(textHeight.Text) && Double.TryParse(textHeight.Text, out height)) bmis = BMIService.Search(Convert.ToDouble(textHeight.Text), bmis, 1);
+            if (comboType.SelectedItem != null && ((ComboBoxItem)comboType.SelectedItem).Content.ToString() == "imperial") bmis = BMIService.Search(BMIcalculator.Models.Type.imperial, bmis);
+            if (comboType.SelectedItem != null && ((ComboBoxItem)comboType.SelectedItem).Content.ToString() == "metric") bmis = BMIService.Search(BMIcalculator.Models.Type.metric, bmis);
+            this.Reset(sender, e);
+            dataBMI.ItemsSource = null;
+            dataBMI.ItemsSource = bmis;
+        }
+        public void Change(object sender, EventArgs e)
+        {
+            List<BMI> bmis = (dataBMI.ItemsSource as ICollection<BMI>).ToList();
+            try
+            {
+                BMIService.Delete(bmis[0].Index);
+                this.Calculate(sender, e);
+                this.Reset(sender, e);
+                dataBMI.ItemsSource = null;
+                dataBMI.ItemsSource = BMIService.GetAll();
+                MessageBox.Show("Record successfully change!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error!", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        public void Delete(object sender, EventArgs e)
+        {
+            List<BMI> bmis = (dataBMI.ItemsSource as ICollection<BMI>).ToList();
+            try
+            {
+                BMIService.Delete(bmis[0].Index);
+                this.Reset(sender, e);
+                dataBMI.ItemsSource = null;
+                dataBMI.ItemsSource = BMIService.GetAll();
+                MessageBox.Show("Record successfully delete!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error!", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            
+        }
+        public void showAll(object sender, EventArgs e)
+        {
+            this.Reset(sender, e);
+            dataBMI.ItemsSource = null;
+            dataBMI.ItemsSource = BMIService.GetAll();
         }
         public void initial()
         {
-            btnCreateExpense.Click += CreateExpense;
-            btnResetExpense.Click += ResetExpense;
-            //btnExpenseSearch
-            //    btnResetSearch
-            dataExpense.ItemsSource = ExpenseService.GetAll();
+            btnCalculate.Click += Calculate;
+            btnReset.Click += Reset;
+            btnSearch.Click += Search;
+            btnDelete.Click += Delete;
+            btnHistory.Click += showAll;
+            btnChange.Click += Change;
+            dataBMI.ItemsSource = BMIService.GetAll();
         }
-
     }
 }
