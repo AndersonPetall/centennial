@@ -3,157 +3,90 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.IO;
+using System.Xml.Serialization;
 using BMIcalculator.Models;
-using BMIcalculator.Utilities;
-namespace BMIcalculator
+namespace BMIcalculator.Utilities
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    public class BMIService
     {
-        public MainWindow()
+        private static string root = "c:\\BMItest\\";
+        static BMIService()
         {
-            InitializeComponent();
-            initial();
+            if (!Directory.Exists(root)) Directory.CreateDirectory(root);
         }
-        private void GenerateBMIColumns(object sender, EventArgs e)
+        public static void Create(BMI bmi)
         {
-            foreach (var column in ((DataGrid)sender).Columns)
+            XmlSerializer serializer = new XmlSerializer(typeof(BMI));
+            using (Stream stream = new FileStream($"{root}{bmi.Index}.xml", FileMode.Create))
             {
-                column.MinWidth = 79;
-                if (column.Header.ToString() == "Index")
-                {
-                    column.Visibility = Visibility.Hidden;
-                }
+                serializer.Serialize(stream, bmi);
             }
         }
-        public void Reset(object sender, EventArgs e)
+        public static void Delete(string index)
         {
-            textName.Text = null;
-            date.SelectedDate = null;
-            comboType.SelectedItem = null;
-            textHeight.Text = null;
-            textWeight.Text = null;
+            string filename = $"{root}{index}.xml";
+            if (File.Exists(filename)) File.Delete(filename);
+            else throw new Exception($"ERROR: Tried to delete an account that does not exists ({index}).");
         }
-        public void Calculate(object sender, EventArgs e)
+        public static BMI Get(string index)
         {
-            double height = 0, weight = 0;
-            if (date.SelectedDate == null ||
-                comboType.SelectedItem == null ||
-                string.IsNullOrWhiteSpace(textName.Text) ||
-                string.IsNullOrWhiteSpace(textHeight.Text) ||
-                string.IsNullOrWhiteSpace(textWeight.Text) ||
-                !Double.TryParse(textHeight.Text, out height) ||
-                !Double.TryParse(textWeight.Text, out weight))
+            string filename = $"{root}{index}.xml";
+            XmlSerializer serializer = new XmlSerializer(typeof(BMI));
+
+            if (File.Exists(filename))
             {
-                MessageBox.Show("Please input all needed values in the correct format.", "Error!", MessageBoxButton.OK, MessageBoxImage.Error);
+                using (Stream stream = new FileStream(filename, FileMode.Open))
+                {
+                    BMI bmi = (BMI)serializer.Deserialize(stream);
+
+                    return bmi;
+                }
             }
             else
             {
-                BMI onebmi = new BMI();
-                onebmi.Name = textName.Text;
-                onebmi.Height = Convert.ToDouble(textHeight.Text);
-                onebmi.Weight = Convert.ToDouble(textWeight.Text);
-                onebmi.Date = date.SelectedDate;
-                onebmi.Index = Guid.NewGuid().ToString();
-                if (((ComboBoxItem)comboType.SelectedItem).Content.ToString() == "imperial")
-                {
-                    onebmi.Type = Models.Type.imperial;
-                    onebmi.result = onebmi.Weight / onebmi.Height / onebmi.Height * 703;
-                }
-                else
-                {
-                    onebmi.Type = Models.Type.metric;
-                    onebmi.result = onebmi.Weight / onebmi.Height / onebmi.Height;
-                }
-                try
-                {
-                    BMIService.Create(onebmi);
-                    this.Reset(sender, e);
-                    dataBMI.ItemsSource = null;
-                    dataBMI.ItemsSource = BMIService.GetAll();
-                    MessageBox.Show("BMI successfully calculated!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message, "Error!", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                throw new Exception($"ERROR: Tried to load an account that does not exist ({index}).");
             }
         }
-
-        public void Search(object sender, EventArgs e)
+        public static List<BMI> Search(string name, List<BMI> list)
         {
-            List<BMI> bmis = BMIService.GetAll();
-            double height = 0, weight = 0;
-            if (date.SelectedDate != null) bmis = BMIService.Search((DateTime)date.SelectedDate, bmis);
-            if (textName.Text != null) bmis = BMIService.Search(textName.Text, bmis);
-            if(!string.IsNullOrWhiteSpace(textWeight.Text) && Double.TryParse(textWeight.Text, out weight)) bmis = BMIService.Search(Convert.ToDouble(textWeight.Text), bmis, "aa");
-            if(!string.IsNullOrWhiteSpace(textHeight.Text) && Double.TryParse(textHeight.Text, out height)) bmis = BMIService.Search(Convert.ToDouble(textHeight.Text), bmis, 1);
-            if (comboType.SelectedItem != null && ((ComboBoxItem)comboType.SelectedItem).Content.ToString() == "imperial") bmis = BMIService.Search(BMIcalculator.Models.Type.imperial, bmis);
-            if (comboType.SelectedItem != null && ((ComboBoxItem)comboType.SelectedItem).Content.ToString() == "metric") bmis = BMIService.Search(BMIcalculator.Models.Type.metric, bmis);
-            this.Reset(sender, e);
-            dataBMI.ItemsSource = null;
-            dataBMI.ItemsSource = bmis;
+            var passable = from n in list where n.Name == name select n;
+            return passable.ToList();
         }
-        public void Change(object sender, EventArgs e)
+        public static List<BMI> Search(DateTime date, List<BMI> list)
         {
-            List<BMI> bmis = (dataBMI.ItemsSource as ICollection<BMI>).ToList();
-            try
+            var passable = from n in list where n.Date == date select n;
+            return passable.ToList();
+        }
+        public static List<BMI> Search(BMIcalculator.Models.Type type, List<BMI> list)
+        {
+            var passable = from n in list where n.Type == type select n;
+            return passable.ToList();
+        }
+        public static List<BMI> Search(double height, List<BMI> list, int a)
+        {
+            var passable = from n in list where n.Height == height select n;
+            return passable.ToList();
+        }
+        public static List<BMI> Search(double weight, List<BMI> list, string a)
+        {
+            var passable = from n in list where n.Weight == weight select n;
+            return passable.ToList();
+        }
+        public static List<BMI> GetAll()
+        {
+            List<BMI> bmis = new List<BMI>();
+            var file = Directory.GetFiles(root, "*.xml");
+            foreach (var item in file)
             {
-                BMIService.Delete(bmis[0].Index);
-                this.Calculate(sender, e);
-                this.Reset(sender, e);
-                dataBMI.ItemsSource = null;
-                dataBMI.ItemsSource = BMIService.GetAll();
-                MessageBox.Show("Record successfully change!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+                using (var stream = new FileStream(item, FileMode.Open))
+                {
+                    var serializer = new XmlSerializer(typeof(BMI));
+                    BMI onebmi = (BMI)serializer.Deserialize(stream);
+                    bmis.Add(onebmi);
+                }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error!", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-        public void Delete(object sender, EventArgs e)
-        {
-            List<BMI> bmis = (dataBMI.ItemsSource as ICollection<BMI>).ToList();
-            try
-            {
-                BMIService.Delete(bmis[0].Index);
-                this.Reset(sender, e);
-                dataBMI.ItemsSource = null;
-                dataBMI.ItemsSource = BMIService.GetAll();
-                MessageBox.Show("Record successfully delete!", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error!", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            
-        }
-        public void showAll(object sender, EventArgs e)
-        {
-            this.Reset(sender, e);
-            dataBMI.ItemsSource = null;
-            dataBMI.ItemsSource = BMIService.GetAll();
-        }
-        public void initial()
-        {
-            btnCalculate.Click += Calculate;
-            btnReset.Click += Reset;
-            btnSearch.Click += Search;
-            btnDelete.Click += Delete;
-            btnHistory.Click += showAll;
-            btnChange.Click += Change;
-            dataBMI.ItemsSource = BMIService.GetAll();
+            return bmis;
         }
     }
 }
