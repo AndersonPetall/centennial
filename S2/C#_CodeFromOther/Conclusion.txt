@@ -1,0 +1,28 @@
+Conclusion
+
+WPF 种类
+ComboBox
+  <ComboBox Name="comboMakeType">
+      <ComboBoxItem Content="Acura"/>
+      <ComboBoxItem Content="Jeep"/>
+  </ComboBox>
+  
+DatePicker
+  <Label Content="Date of Birth"/>
+  <DatePicker Name="dateSelectedDOB" IsEnabled="True"/>
+  
+  ComboBox与enum的转变
+    if (((ComboBoxItem)comboColor.SelectedItem).Content.ToString() == "White")
+    {
+        oneCar.Color = Models.Color.White;
+    }
+    
+    
+    
+  页面的展示与获取
+<Label Content="Car" FontWeight="Bold" Grid.Row="0"/>
+<DataGrid Name="dataCar" Grid.Row="1" IsReadOnly="True"/>
+展示
+  DataCar.ItemsSource = cars
+获取为List<>
+  List<Car> cars = (dataCar.ItemsSource as ICollection<Car>).ToList();
