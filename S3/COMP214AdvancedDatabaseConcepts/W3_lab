@@ -1,0 +1,152 @@
+--1
+价格低于平均水平
+select AVG(retail) from books;
+ 
+select title, retail from books 
+where retail < (select AVG(retail) from books);
+ 
+
+
+--2
+select * from books;
+ 
+select a.title, b.category, a.cost from books a,
+(select category, AVG(cost) averagecost from books group by category) b
+where a.category = b.category and a.cost < b.averagecost;
+ 
+书的价格低于同类型的平均值
+select a.title, a.isbn, b.category, a.cost from books a,
+(select category, AVG(cost)averagecost from books group by category) b
+where a.category = b.category and a.cost < b.averagecost;
+ 
+
+
+
+
+--3
+书的order
+和1014同一个state
+Select * from orders
+ 
+Select shipstate from orders where order# = 1014;
+ 
+select order# from orders where
+shipstate = (select shipstate from orders where order# = 1014);
+ 
+
+
+
+
+
+
+
+--4
+select * from orderitems;
+ 
+select (quantity*paideach) from orderitems where order# = 1008;
+ 
+有的order#存在不同的item, 所以需要先group, 后执行判断条件
+Sql执行语句又顺序, 如果是必须是 where -> group by -> having
+如果是 where->group by, 则是先判断条件,后group
+如果是 group by->having, 则是先group, 后判断条件 
+Having 语句中 聚合条件必须使用别名
+(错误写法)
+select distinct order# from orderitems where (quantity*paideach) 
+> (select (quantity*paideach) from orderitems where order# = 1008);
+select order# from orderitems where (quantity*paideach) 
+> (select (quantity*paideach) from orderitems where order# = 1008) group by order#;
+
+ 
+
+select order# from orderitems group by order# having sum(quantity*paideach) >
+(select sum(quantity*paideach) from orderitems where order# = 1008);
+ 
+
+
+
+
+
+--5
+卖最多书的作者
+
+书卖的最多的书
+select Max(count(*)) from orderitems group by isbn;
+select Max(count(quantity)) from orderitems group by isbn;
+书卖的最多的书的isbn
+select isbn from orderitems group by isbn having count(quantity) =
+(select max(count(quantity)) from orderitems group by isbn)
+通过isbn找到对应的作者
+select lname, fname from bookauthor join author using(authorid)
+where isbn in
+(select isbn from orderitems group by isbn having count(quantity) =
+(select max(count(quantity)) from orderitems group by isbn));
+
+SELECT lname, fname FROM bookauthor JOIN author USING(authorid)
+WHERE isbn IN
+(SELECT isbn FROM orderitems GROUP BY isbn HAVING SUM(quantity) =
+(SELECT MAX(COUNT(*)) FROM orderitems GROUP BY isbn));
+
+
+
+
+
+
+--6
+挑选书
+与costumer1007 购买的类相同但是不是他之前买的
+SELECT title FROM books WHERE category IN
+(SELECT DISTINCT category FROM books JOIN orderitems USING(isbn)
+WHERE customers# = 1007) 
+AND isbn NOT IN 
+(SELECT isbn FROM orders JOIN orderitems USING(order#)
+WHERE customer# = 1007);
+
+
+
+
+
+--7
+停留时间最长的order
+select shipcity, shipstate from orders 
+where shipdate-orderdate = 
+(select max(shipdate-orderdate) from orders);
+
+
+--8
+哪些顾客的订单包好最便宜的书
+select * from customers;
+ 
+Select * from orders;
+ 
+select * from orderitems;
+ 
+select * from books;
+ 
+Customers 与 orders 用 customer#相连
+Orders 与 orderitems 用 order#相连
+Orderitems 与 books 用 isbn 相连
+Books里面查找最便宜的retail
+
+select customer# from 
+customers join orders using(customer#) join orderitems using (order#) join books using (isbn)
+where retail = (select min(retail) from books);
+
+
+
+
+
+--9
+消费者总数
+购买的书籍的作者为 James Austin.
+SELECT COUNT(DISTINCT customers#)
+FROM orders JOIN orderitems USING(order#)
+WHERE isbn IN (SELECT isbn FROM 
+orderitems JOIN bookauthor USING(isbn) JOIN author USING(authorid)
+WHERE lname= 'AUSTIN' AND fname = 'JAMES');
+
+
+--10
+书籍由THE WOK WAY TO COOK出版 
+SELECT title FROM books
+WHERE pubid =
+(SELECT pubid FROM books WHERE title = 'THE WOK WAY TO COOK');
