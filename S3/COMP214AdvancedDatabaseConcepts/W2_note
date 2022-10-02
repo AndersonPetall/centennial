@@ -5,10 +5,14 @@ view
  type of view 
    simple view 
      定义: 单个表,不包含function 或者 group by
+     EG: create view viewName as select id, name from tableName where id = 2;
    complex view
      定义: 多个表,包含function 或者 group by
+     EG: create view viewName as select id, name from tableName where id = 2 group by id;
    inline view 
-     定义: 单个表,不包含函数或者表达式,可执行DML
+     定义:  inline view 就是指 from 后面出现另1个select 语句
+     EG: select tableName from (select * from tableName)
    materialized view
-     定义: 单个表,不包含函数或者表达式,可执行DML
+     定义: 物理的复制检索到的数据
+     EG:  vreate materialized view viewName as select id, name from tableName whwere id = 2
    
