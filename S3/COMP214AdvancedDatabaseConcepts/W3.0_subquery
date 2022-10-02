@@ -1,1 +1,17 @@
-
+type
+  single-row subqueyr
+  multiple-row subquery
+  multiple-column subquery
+  correlated subquery
+  uncorrelated subquery
+  
+single-row subqueyr
+  return to the outer query one row which contains one column
+  EG:
+multiple-row subquery
+  return to the outer query more than one row
+multiple-column subquery
+  return to the outer query more than one column
+correlated subquery
+uncorrelated subquery
+  
