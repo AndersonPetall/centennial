@@ -2,6 +2,9 @@ view
  intro
    no data store, store query
    reduce complexity, restrict user accessibility
+ syntax:
+   create/replace [force] view viewName col1,col2,... as select col...from tableName [with check option] [with read only]
+   insert viewName(col1,col2) values(value1, value2)
  type of view 
    simple view 
      定义: 单个表,不包含function 或者 group by
@@ -15,4 +18,5 @@ view
    materialized view
      定义: 物理的复制检索到的数据
      EG:  vreate materialized view viewName as select id, name from tableName whwere id = 2
+   DML operator
    
