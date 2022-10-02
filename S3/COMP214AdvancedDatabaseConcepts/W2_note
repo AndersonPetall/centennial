@@ -20,3 +20,16 @@ view
      EG:  vreate materialized view viewName as select id, name from tableName whwere id = 2
    DML operator
    
+
+
+Database Objects
+  construction
+    table     store data
+    sequence序列  
+    index索引     
+    synonym   alias for other database object
+  Sequence
+  
+  Indexes
+  
+  Synonym
