@@ -7,11 +7,18 @@ type
   
 single-row subqueyr
   return to the outer query one row which contains one column
-  EG:
+  EG: select col1,col2...from tableName where col1 (>/</=/!=) (select col1 from tableName where ...)
 multiple-row subquery
   return to the outer query more than one row
+  Key:  IN/NOT IN 匹配每一个 / ALL 全部比较 / ANY 某一个比较
+  EG: select col1,col2...from tableName where col1 IN / NOT IN (select col1 from tableName where ...)
+  EG: select col1,col2...from tableName where col1 (>/</=)ALL IN (select col1 from tableName where ...)
 multiple-column subquery
   return to the outer query more than one column
+  单行多列 + 多行多列
 correlated subquery
+  子查询不能独立运行, 先outer query, 再subquery(外层执行一次,内层执行一遍)
+  EG: select a.col1 from tableA a where exists (select col from tableB b where b.col2 = a.col2)
 uncorrelated subquery
-  
+  子查询能独立运行, 先subquery, 再outer query(内层执行完毕,再由外层执行)
+  EG: select a.col1 from tableA a where a.col2 = (select max(b.col) from tableB b)
