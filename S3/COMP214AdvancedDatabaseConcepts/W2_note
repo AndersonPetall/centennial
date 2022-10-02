@@ -1,0 +1,14 @@
+view
+ intro
+   no data store, store query
+   reduce complexity, restrict user accessibility
+ type of view 
+   simple view 
+     定义: 单个表,不包含function 或者 group by
+   complex view
+     定义: 多个表,包含function 或者 group by
+   inline view 
+     定义: 单个表,不包含函数或者表达式,可执行DML
+   materialized view
+     定义: 单个表,不包含函数或者表达式,可执行DML
+   
