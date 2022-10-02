@@ -1,1 +1,51 @@
+//大于每个人的平均
+--1
+select first, last from officers join crime_officers using(officer_id) group by first, last 
+having count(crime_id) > 
+(select count(crime_id)/count(distinct officer_id) from crime_officers);
+ 
+ 
+//小于每个人的平均 & v-offenders不是
+--2
+select first, last from crimes join criminals using(criminal_id) 
+where v_status = 'N' group by first, last 
+having count(crime_id) < (select count(crime_id)/count(distinct criminal_id) from crimes);
+ 
 
+// 日期 小于 平均日期
+--3
+select * from appeals where (hearing_date - filing_date) <
+(select avg(hearing_date - filing_date) from appeals);
+ 
+
+//小于每个人的平均
+--4
+select first, last from prob_officers join sentences using(prob_id) group by first, last
+having count(criminal_id) < 
+(select count(criminal_id)/count(distinct prob_id) from sentences);
+ 
+
+//大于每个人的平均
+--5
+select * from crimes join appeals using(crime_id) where crime_id in
+(select crime_id from appeals group by crime_id having count(crime_id)
+>= all(select count(appeal_id) from appeals group by crime_id));
+ 
+
+//小于平均 & 大于平均
+--6
+select * from crime_charges where 
+fine_amount > (select avg(fine_amount) from crime_charges)
+and amount_paid < (select avg(amount_paid) from crime_charges);
+ 
+
+//某人所在的某个事情的 全部与此联系的人
+--7
+select first, last from criminals join crimes using (criminal_id) join crime_charges using (crime_id)
+where crime_code in  (select crime_code from crime_charges where crime_id = 10089) group by first, last;
+ 
+
+//大于全部
+--8
+select first, last from officers join crime_officers using(officer_id) group by first, last 
+having count(crime_id) >= all (select count(crime_id)/count(distinct officer_id) from crime_officers);
