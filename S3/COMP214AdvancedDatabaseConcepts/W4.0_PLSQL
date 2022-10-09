@@ -1,0 +1,9 @@
+syntax of PL/SQL block structure:
+  DECLARE  --option
+    declarations
+  BEGIN  --mandatory
+    executable statements
+  EXCEPTION  --option
+    exception handler
+  END;  --mandatory
+  
