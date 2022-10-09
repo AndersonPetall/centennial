@@ -1,5 +1,5 @@
 Require: data, shipper, shipping number
-Condition: IDSTAGE == 5
+Condition: IDSTAGE == 5 && (entered basket_number(idbasket == 3))
 From: BB_BASKETSTATUS 
 
 DECLARE
