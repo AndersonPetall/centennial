@@ -1,3 +1,4 @@
+3-1
 Require: data, shipper, shipping number
 Condition: IDSTAGE == 5 && (entered basket_number(idbasket == 3))
 From: BB_BASKETSTATUS 
@@ -16,4 +17,27 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE('Date Shipped: '||lv_ship_date);
   DBMS_OUTPUT.PUT_LINE('Shipper: '||lv_shipper_txt);
   DBMS_OUTPUT.PUT_LINE('Shipping #: '||lv_ship_num);
+END;
+
+
+
+3-2
+Require: all shipping information
+Condition: IDSTAGE == 5 && (entered basket_number(idbasket == 3))
+From: BB_BASKETSTATUS 
+Key: %ROWTYPE
+
+DECLARE
+  rec_ship bb_basketstatus%ROWTYPE;
+  lv_bask_num bb_basketstatus.idbasket%TYPE := 3;
+BEGIN
+  SELECT *
+   INTO rec_ship
+   FROM bb_basketstatus
+   WHERE idbasket =  lv_bask_num
+    AND idstage = 5;
+  DBMS_OUTPUT.PUT_LINE('Date Shipped: '||rec_ship.dtstage);
+  DBMS_OUTPUT.PUT_LINE('Shipper: '||rec_ship.shipper);
+  DBMS_OUTPUT.PUT_LINE('Shipping #: '||rec_ship.shippingnum);
+  DBMS_OUTPUT.PUT_LINE('Notes: '||rec_ship.notes);
 END;
