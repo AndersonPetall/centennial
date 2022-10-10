@@ -92,3 +92,29 @@ BEGIN
   --END IF; 
    DBMS_OUTPUT.PUT_LINE('Shopper '||lv_shop_num||' is rated '||lv_rating_txt);
 END;
+
+
+
+
+3-5
+Require: quantity of product can be purchased by certain amount
+Condition: (entered productid(idshopper == 4) && entered amount(amount = 100))
+From: BB_PRODUCT 
+Key: WHILE LOOP
+
+DECLARE
+  productid BB_PRODUCT.idproduct%type:= 4;
+  total NUMBER:= 100;
+  singleprice BB_PRODUCT.price%TYPE;
+  quantity NUMBER(3):=0;
+  totalspend NUMBER(5,2):=0;
+BEGIN
+  SElECT price into singleprice  from BB_PRODUCT WHERE idProduct = productid;
+  WHILE singleprice < (total-totalspend)LOOP
+  quantity:=quantity+1;
+  totalspend:=quantity*singleprice;
+  END LOOP;
+  DBMS_OUTPUT.PUT_LINE('quantity = ' || quantity);
+  DBMS_OUTPUT.PUT_LINE('total spend = ' || totalspend);
+  DBMS_OUTPUT.PUT_LINE('product id = ' || productid);
+END;
