@@ -152,10 +152,9 @@ END;
 Require: list of information
 Condition: (entered idbasket(idbasket == 12))
 From: bb_basket 
-Key: RECORD
+Key: Scalar Variables(标量变量)  (多个变量)
 PS: to_char()使用  to_char(ship, '$99.99')==>$3.26
 
-WAY_1: 分开写法
 DECLARE
  id bb_basket.idbasket%TYPE := 12;
  basket bb_basket.idbasket%TYPE;
@@ -171,7 +170,16 @@ dbms_output.put_line('Basket ' || basket || ' has a subtotal of' || to_char(sub,
 || to_char(tax, '$99.99') || ', and the total is' || to_char(total, '$99.99'));
 end;
 
-WAY_2: record写法
+
+
+
+3.8
+Require: list of information
+Condition: (entered idbasket(idbasket == 12))
+From: bb_basket 
+Key: RECORD
+PS: to_char()使用  to_char(ship, '$99.99')==>$3.26  || local variable 和 record里面的 variable 可以同名 
+
 DECLARE 
  ID BB_BASKET.IDBASKET%TYPE := 12;
  TYPE inforlist IS RECORD(
