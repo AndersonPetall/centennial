@@ -118,3 +118,54 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE('total spend = ' || totalspend);
   DBMS_OUTPUT.PUT_LINE('product id = ' || productid);
 END;
+
+
+
+
+3-6
+Require: ｃlassification according to quantity
+Condition: (entered idbasket(idbasket == 5/12))
+From: bb_basket 
+Key: IF ELSIF ELSE
+PS: local variable 和 select variable 可以同名
+
+DECLARE
+  id bb_basket.idbasket%TYPE := 5;
+  quantity number;
+  cost number(5,2);
+BEGIN
+  SELECT quantity INTO quantity from bb_basket WHERE  idbasket = id;
+  IF quantity > 10 THEN cost := 12;
+    ELSIF quantity >=7 THEN cost := 10;
+    ELSIF quantity >=4 THEN cost := 7.5;
+    ELSE cost := 5;
+  END IF;
+  DBMS_OUTPUT.PUT_LINE('basket id = '||id);
+  DBMS_OUTPUT.PUT_LINE('basket quantity = '||quantity);
+  DBMS_OUTPUT.PUT_LINE('basket cost = '||cost);
+END;
+
+
+
+
+3.7
+Require: ｃlassification according to quantity
+Condition: (entered idbasket(idbasket == 5/12))
+From: bb_basket 
+Key: IF ELSIF ELSE
+PS: to_char()使用  to_char(ship, '$99.99')==>$3.26
+
+DECLARE
+ id bb_basket.idbasket%TYPE := 12;
+ basket bb_basket.idbasket%TYPE;
+ sub bb_basket.subtotal%TYPE;
+ ship bb_basket.shipping%TYPE;
+ tax bb_basket.tax%TYPE;
+ total bb_basket.total%TYPE;
+BEGIN
+ SELECT idbasket, subtotal, shipping, tax, total
+ INTO basket, sub, ship, tax, total FROM bb_basket WHERE idbasket = id;
+dbms_output.put_line('Basket ' || basket || ' has a subtotal of' || to_char(sub, '$99.99')
+|| ', shipping is' || to_char(ship, '$99.99') || ',' || chr(10) || 'tax is'
+|| to_char(tax, '$99.99') || ', and the total is' || to_char(total, '$99.99'));
+end;
