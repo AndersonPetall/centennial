@@ -149,12 +149,13 @@ END;
 
 
 3.7
-Require: ｃlassification according to quantity
-Condition: (entered idbasket(idbasket == 5/12))
+Require: list of information
+Condition: (entered idbasket(idbasket == 12))
 From: bb_basket 
-Key: IF ELSIF ELSE
+Key: RECORD
 PS: to_char()使用  to_char(ship, '$99.99')==>$3.26
 
+WAY_1: 分开写法
 DECLARE
  id bb_basket.idbasket%TYPE := 12;
  basket bb_basket.idbasket%TYPE;
@@ -169,3 +170,22 @@ dbms_output.put_line('Basket ' || basket || ' has a subtotal of' || to_char(sub,
 || ', shipping is' || to_char(ship, '$99.99') || ',' || chr(10) || 'tax is'
 || to_char(tax, '$99.99') || ', and the total is' || to_char(total, '$99.99'));
 end;
+
+WAY_2: record写法
+DECLARE 
+ ID BB_BASKET.IDBASKET%TYPE := 12;
+ TYPE inforlist IS RECORD(
+   id BB_BASKET.IDBASKET%TYPE,
+   sub BB_BASKET.SUBTOTAL%TYPE,
+   ship BB_BASKET.SHIPPING%TYPE, 
+   tax BB_BASKET.TAX%TYPE,
+   total BB_BASKET.TOTAL%TYPE);
+ infor inforlist;
+BEGIN
+ SELECT idbasket, subtotal, shipping, tax, total INTO infor FROM bb_basket WHERE idbasket = ID;
+ dbms_output.put_line('Basket ' || infor.id || ' has a subtotal of' || to_char(infor.sub, '$99.99')
+|| ', shipping is' || to_char(infor.ship, '$99.99') || ',' || chr(10) || 'tax is'
+|| to_char(infor.tax, '$99.99') || ', and the total is' || to_char(infor.total, '$99.99'));
+END;
+ 
+
