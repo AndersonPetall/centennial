@@ -29,7 +29,7 @@ END;
 
 
 
-4-2 Using an Explicit Cursor
+4-2 Using a CURSOR FOR Loop
 Require: whether item in stock (comparing the item quantity with the product stock amount)
 Condition: (entered idbasket(idbasket == 6))
 From: BB_BASKETITEM, BB_PRODUCT
