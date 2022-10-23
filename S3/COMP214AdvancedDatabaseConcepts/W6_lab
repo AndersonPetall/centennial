@@ -1,21 +1,29 @@
-3-1
-Require: data, shipper, shipping number
-Condition: IDSTAGE == 5 && (entered basket_number(idbasket == 3))
-From: BB_BASKETSTATUS 
+4-1
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
 
 DECLARE
-  lv_ship_date bb_basketstatus.dtstage%TYPE;
-  lv_shipper_txt bb_basketstatus.shipper%TYPE;
-  lv_ship_num bb_basketstatus.shippingnum%TYPE;
-  lv_bask_num bb_basketstatus.idbasket%TYPE := 3;
-BEGIN
-  SELECT dtstage, shipper, shippingnum
-   INTO lv_ship_date, lv_shipper_txt, lv_ship_num
-   FROM bb_basketstatus
-   WHERE idbasket = lv_bask_num
-    AND idstage = 5;
-  DBMS_OUTPUT.PUT_LINE('Date Shipped: '||lv_ship_date);
-  DBMS_OUTPUT.PUT_LINE('Shipper: '||lv_shipper_txt);
-  DBMS_OUTPUT.PUT_LINE('Shipping #: '||lv_ship_num);
+  CURSOR onecursor IS 
+    SELECT idbasket, quantity, stock FROM bb_basketitem 
+    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
+  TYPE typebas IS RECORD(
+    id bb_basketitem.idbasket%type,
+    quantity bb_basketitem.quantity%type,
+    stock bb_product.stock%type
+  );
+  onebas typebas;
+  flag char(1) := 'Y';
+BEGIN 
+  OPEN onecursor;
+  LOOP
+    FETCH onecursor INTO onebas;
+      EXIT WHEN onecursor%NOTFOUND;
+      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  END LOOP;
+  CLOSE onecursor;
+  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
+   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  END IF;
 END;
 
