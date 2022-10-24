@@ -12,10 +12,18 @@ Decision Structure
   Simple IF (IF/THEN)
   IF/THEN/ELSE
   IF/THEN/ELSIF/ELSE
+  Nested IF
+  Logical Operators(OR/AND) +  IF
  CASE Statements
   Basic CASE statement
   searched CASE statement
   CASE expression
+LOOP Statement
+  Basic LOOP
+  WHILE LOOP
+  FOR LOOP
+  CONTINUE Statement
+  Nested LOOPS 
  
  EG: IF/THEN
    DCECLARE
