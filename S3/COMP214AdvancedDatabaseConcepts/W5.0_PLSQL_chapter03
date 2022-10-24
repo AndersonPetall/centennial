@@ -2,16 +2,32 @@ record
 collect
 %type
 %rowtype
-SQL in PL/SQL
+DML in PL/SQL
 
-EG: SELECT INTO
+EG: DML-SELECT INTO
   DECLARE
     lv_data DATE;
     lv_num;
-    lv_days
+    lv_days;
   BEGIN
-    SELECT  dtcreate, quantity INTO lv_date, lv_sum FROM BB_BASKET WHERE idshopper = 0;
+    SELECT dtcreate, quantity INTO lv_date, lv_sum FROM BB_BASKET WHERE idshopper = 0;
     lv_days := TO_DATE('02/28/12','mm/dd/yy') - lv_data;
+  END;
+
+
+EG: DML-INSERT, UPDATE, DELETE
+    create table test_table(empno NUMBER(5), ename VARCHAR2(50));
+  BEGIN
+    INSERT INTO test_table(empno,ename) values(111,'xiaohai');
+    COMMIT;
+  END;
+  BEGIN
+    UPDATE test_table set empno = 222 WHERE ename='xiaohai';
+    COMMIT;
+  END;
+  BEGIN
+    DELETE FROM test_table WHERE ename='xiaohai';
+    COMMIT;
   END;
 
 EG: %TYPE
@@ -20,6 +36,56 @@ EG: %TYPE
     lv_num BB_BASKET.quantity%TYPE;
     lv_days
   BEGIN
-    SELECT  dtcreate, quantity INTO lv_date, lv_sum FROM BB_BASKET WHERE idshopper = 0;
+    SELECT dtcreate, quantity INTO lv_date, lv_sum FROM BB_BASKET WHERE idshopper = 0;
     lv_days := TO_DATE('02/28/12','mm/dd/yy') - lv_data;
   END;
+
+EG: %RECORD
+  DECLARE
+    TYPE type_basket IS RECORD(
+    lv_data BB_BASKET.dtcreate%TYPE;
+    lv_num BB_BASKET.quantity%TYPE;
+    );
+    rec_basket type_basket;
+    lv_days;
+  BEGIN
+    SELECT dtcreate, quantity INTO rec_basket FROM BB_BASKET WHERE idshopper = 0;
+    lv_days := TO_DATE('02/28/12','mm/dd/yy') - lrec_basket.v_data;
+  END;
+
+EG: %ROWTYPE
+  DECLARE
+    rec_basket BB_BASKET%RWOTYPE;
+    lv_days;
+  BEGIN
+    SELECT  * INTO rec_basket FROM BB_BASKET WHERE idshopper = 0;
+    lv_days := TO_DATE('02/28/12','mm/dd/yy') - lrec_basket.v_data;
+    DBMS_OUTPUT.PUT_LINE(rec_basket.dtcreate);
+    DBMS_OUTPUT.PUT_LINE(rec_basket.quantity);
+  END;
+
+EG: %ROWTYPE + DML/INSERT
+  DECLARE
+    rec_basket BB_BASKET%RWOTYPE;
+  BEGIN
+  rec_basket.dtcreate := TO_DATE('02/28/12','mm/dd/yy') ;
+  rec_basket.quantity := 8;
+  INSERT INTO BB_BASKET VALUES rec_basket;
+  END;
+
+COLLECTION
+  type1 - associative array(or index-by table)
+  type2 - nested table
+  type3 - variable-size array (varray)
+
+
+
+
+
+
+
+
+
+
+
+
