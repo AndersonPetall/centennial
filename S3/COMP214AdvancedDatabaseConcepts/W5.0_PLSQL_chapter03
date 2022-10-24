@@ -1,8 +1,17 @@
-record
-collect
-%type
-%rowtype
 DML in PL/SQL
+  SELECT
+  INSERT/UPDATE/DELETE
+attribute
+  %TYPE
+  %ROWTYPE
+RECORD
+COLLECTION
+  type1 - associative array(or index-by table)
+  type2 - nested table
+  type3 - variable-size array (varray)
+https://zhuanlan.zhihu.com/p/509196221
+https://blog.csdn.net/weixin_30410999/article/details/96305120
+https://blog.csdn.net/crzzyracing/article/details/77096891
 
 EG: DML-SELECT INTO
   DECLARE
@@ -72,20 +81,3 @@ EG: %ROWTYPE + DML/INSERT
   rec_basket.quantity := 8;
   INSERT INTO BB_BASKET VALUES rec_basket;
   END;
-
-COLLECTION
-  type1 - associative array(or index-by table)
-  type2 - nested table
-  type3 - variable-size array (varray)
-
-
-
-
-
-
-
-
-
-
-
-
