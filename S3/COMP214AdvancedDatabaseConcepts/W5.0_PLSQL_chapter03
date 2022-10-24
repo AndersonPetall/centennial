@@ -2,3 +2,24 @@ record
 collect
 %type
 %rowtype
+SQL in PL/SQL
+
+EG: SELECT INTO
+  DECLARE
+    lv_data DATE;
+    lv_num;
+    lv_days
+  BEGIN
+    SELECT  dtcreate, quantity INTO lv_date, lv_sum FROM BB_BASKET WHERE idshopper = 0;
+    lv_days := TO_DATE('02/28/12','mm/dd/yy') - lv_data;
+  END;
+
+EG: %TYPE
+  DECLARE
+    lv_data BB_BASKET.dtcreate%TYPE;
+    lv_num BB_BASKET.quantity%TYPE;
+    lv_days
+  BEGIN
+    SELECT  dtcreate, quantity INTO lv_date, lv_sum FROM BB_BASKET WHERE idshopper = 0;
+    lv_days := TO_DATE('02/28/12','mm/dd/yy') - lv_data;
+  END;
