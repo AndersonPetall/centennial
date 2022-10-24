@@ -7,3 +7,162 @@ syntax of PL/SQL block structure:
     exception handler
   END;  --mandatory
   
+Decision Structure
+ IF Statement
+  Simple IF (IF/THEN)
+  IF/THEN/ELSE
+  IF/THEN/ELSIF/ELSE
+ CASE Statements
+  Basic CASE statement
+  searched CASE statement
+  CASE expression
+ 
+ EG: IF/THEN
+   DCECLARE
+     lv_num1 CONSTANT NUMBER(2,2) := 0.05;
+     lv_num2 (NUMBER(15) NOt NULL := 14;
+   BEGIN
+     IF lv_num1 = 0.05 THEN lv_num2 := 15;
+     END IF;
+   END;
+   
+ EG: IF/THEN/ELSE
+   DCECLARE
+     lv_num1 CONSTANT NUMBER(2,2) := 0.05;
+     lv_num2 (NUMBER(15);
+   BEGIN
+     IF lv_num1 = 0.05 THEN lv_num2 := 15;
+     ELSE lv_num2 := 20;
+     END if;
+   END;
+   
+ EG: IF/THEN/ELSIF/ELSE
+   DCECLARE
+     lv_num1 CONSTANT NUMBER(2,2) := 0.05;
+     lv_num2 (NUMBER(15);
+   BEGIN
+     IF lv_num1 = 0.05 THEN lv_num2 := 15;
+     ELSIF lv_num1 = 0.06 THEN lv_num2 := 20;
+     ELSIF lv_num1 = 0.07 THEN lv_num2 := 25;
+     ELSE lv_num2 := 30;
+     END if;
+   END;
+   
+ EG: Nested IF
+   DCECLARE
+     lv_num NUMBER(1) NOT NULL := 1;
+     lv_num1 CONSTANT NUMBER(2,2) := 0.05;
+     lv_num2 (NUMBER(15);
+   BEGIN
+     IF lv_num = 1 THEN
+       IF lv_num1 = 0.05 THEN lv_num2 := 15;
+       ELSIF lv_num1 = 0.06 THEN lv_num2 := 20;
+       ELSE lv_num2 := 35;
+       END if;
+     ELSE IF lv_num = 2 THEN lv_num2 = 30;
+     END IF:
+   END;
+   
+ EG: Logical Operators(OR/AND) +  IF
+   DCECLARE
+     lv_num NUMBER(1) NOT NULL := 1;
+     lv_num1 CONSTANT NUMBER(2,2) := 0.05;
+     lv_num2 (NUMBER(15);
+   BEGIN
+     IF lv_num = 1 OR lv_num1 = 0.05 THEN lv_num2 := 2;
+     ELSE lv_num2 := 30;
+     END IF:
+   END;
+
+ EG: Basic CASE Statement
+   DCECLARE
+     lv_char CHAR(1) NOT NULL := 'A';
+     lv_num1 CONSTANT NUMBER(2,2) := 0.05;
+     lv_num2 (NUMBER(15);
+   BEGIN
+     CASE lv_char
+       WHEN 'A' THEN lv_num2 :=1;
+       WHEN 'B' THEN lv_num2 :=2;
+       WHEN 'C' THEN lv_num2 :=3;
+       ELSE 'D' THEN lv_num2 :=4;
+     END CASE;
+   END;
+
+ EG: Searched CASE
+   DCECLARE
+     lv_char CHAR(1) NOT NULL := 'A';
+     lv_num1 CONSTANT NUMBER(2,2) := 0.05;
+     lv_num2 (NUMBER(15);
+   BEGIN
+     CASE 
+       WHEN lv_char='A' THEN lv_num2 :=1;
+       WHEN lv_num1=0.05 THEN lv_num2 :=2;
+       ELSE 'C' THEN lv_num2 :=3;
+     END CASE;
+   END;
+
+ EG: CASE Expression
+   DCECLARE
+     lv_char CHAR(1) NOT NULL := 'A';
+     lv_num1 CONSTANT NUMBER(2,2) := 0.05;
+     lv_num2 (NUMBER(15);
+   BEGIN
+     lv_num2 := CASE lv_char
+       WHEN 'A' THEN 1;
+       WHEN 'B' THEN 2;
+       WHEN 'C' THEN 3;
+       ELSE 'D' THEN 4;
+     END CASE;
+   END;
+
+ EG: Basic LOOP
+   DCECLARE
+     lv_num CONSTANT NUMBER(2,2) := 1.00;
+   BEGIN
+     LOOP
+       DBMS_OUTPUT.PUT_LINE(lv_num);
+       EXIST WHEN lv_num >= 5;
+       lv_num := lv_num + 1;
+     END LOOP;
+   END;
+
+ EG: WHILE LOOP
+   DCECLARE
+     lv_num CONSTANT NUMBER(2,2) := 1.00;
+   BEGIN
+     WHILE lv_num  <= 5 LOOP
+       DBMS_OUTPUT.PUT_LINE(lv_num);
+       lv_num := lv_num + 1;
+     END LOOP;
+   END;
+
+ EG: FOR LOOP
+   BEGIN
+     FOR i in 1..5 LOOP
+       DBMS_OUTPUT.PUT_LINE(i);
+     END LOOP;
+   END;
+
+ EG: CONTINUE Statement
+   DCECLARE
+     lv_num CONSTANT NUMBER(3) := 0;
+   BEGIN
+     FOR i in 1..25 LOOP
+       CONTINUE WHEN MOD(i,5) <> 0;
+       DBMS_OUTPUT.PUT_LINE('Loop i value : ' ||i);
+       lv_num := lv_num + 1;
+     END LOOP;
+   END;  //打印5,10,15,20,25
+
+ EG: Nested LOOPS 
+   DCECLARE
+     lv_num CONSTANT NUMBER(3) := 0;
+   BEGIN
+     FOR i in 1..3 LOOP
+       DBMS_OUTPUT.PUT_LINE('OUTER Loop i');
+       FOR ii IN 1..2 LOOP
+         DBMS_OUTPUT.PUT_LINE('INNER Loop ii');
+       END LOOP;
+     END LOOP;
+   END;  //打印5,10,15,20,25
+
