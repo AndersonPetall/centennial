@@ -8,7 +8,7 @@ Cursor
       CLOSE
     with FOR LOOP
       Handles tasks automatically for processing each row returned by a cursor (record declaration, fetch, ending loop)
-      For循环会自动打开游标，关闭游标，并且自动会让游标指向一条记录
+      For循环会自动打开游标，关闭游标，并且自动会让游标指向一条记录(https://zhuanlan.zhihu.com/p/512772381)
 Exception Handling
 
 
