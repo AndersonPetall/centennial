@@ -9,9 +9,20 @@ COLLECTION
   type1 - associative array(or index-by table)
   type2 - nested table
   type3 - variable-size array (varray)
+  
 https://zhuanlan.zhihu.com/p/509196221
-https://blog.csdn.net/weixin_30410999/article/details/96305120
 https://blog.csdn.net/crzzyracing/article/details/77096891
+
+https://blog.csdn.net/pan_junbiao/article/details/70537582
+IS TABLE OF 
+  指定是一个集合的表的数组类型,简单的来说就是一个可以存储一列多行的数据类型
+INDEX BY BINARY_INTEGER
+  指索引组织类型
+  function: 其作用是,加了”index by binary_integer ”后，numbers类型的下标就是自增长,可以自动根据下标找到对应的值。numbers类型在插入元素时，不需要初始化，不需要每次extend增加一个空间
+  https://blog.csdn.net/weixin_39158271/article/details/78348315
+BULK COLLECT
+  指是一个成批聚合类型,简单的来说 , 它可以存储一个多行多列存储类型，采用BULK COLLECT可以将查询结果一次性地加载到集合中
+
 
 EG: DML-SELECT INTO
   DECLARE
@@ -80,4 +91,39 @@ EG: %ROWTYPE + DML/INSERT
   rec_basket.dtcreate := TO_DATE('02/28/12','mm/dd/yy') ;
   rec_basket.quantity := 8;
   INSERT INTO BB_BASKET VALUES rec_basket;
+  END;
+  
+EG: COLLECTION - associative array(or index-by table)
+  DECLARE
+    TYPE type_aarray IS TABLE OF NUMBER INDEX BY BINARY_INTEGER;
+    one_aarray type_aarray;
+    num1 NUMBER:= 0; num2 NUMBER:= 1; num3 NUMBER:= 2;
+    total NUMBER; count NUMBER;
+  BEGIN
+    one_aarray(1) := num1; one_aarray(2) := num2; one_aarray(3) := num3;
+    FOR i IN 1...one_aarray.COUNT LOOP
+      IF one_aarray(i) IS NOT NULL THEN
+        total := total + one_aarray(i);
+        count := count + 1;
+      END IF;
+    END LOOP;
+  END;
+  
+EG: COLLECTION - associative array(or index-by table) 
+    ==> table of RECORD = COLLECTION + %ROWTYPE
+  DECLARE
+    TYPE type_aarray IS TABLE OF bb_basketitem%ROWTYPE INDEX BY BINARY_INTEGER;
+    one_aarray type_aarray;
+    ind NUMBER := 1;
+    column1 bb_basketitem.column1%type := 7; column2 bb_basketitem.column2%type := 9;
+  BEGIN
+    one_aarray(ind).column1 := column1; one_aarray(ind).column2 := column2;
+  END;
+
+EG: BULK COLLECT
+  DECLARE
+    TYPE type_aarray IS TABLE OF bb_basketitem%ROWTYPE INDEX BY BINARY_INTEGER;
+    one_aarray type_aarray;
+  BEGIN
+    SELECT * BULK COLLECT INTO one_aarray from bb_basketitem where column1 = 7;
   END;
