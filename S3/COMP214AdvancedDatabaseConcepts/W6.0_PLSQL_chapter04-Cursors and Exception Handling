@@ -1,0 +1,47 @@
+Cursor
+  Implicit Cursor
+  Explicit Cursor 
+    DECLARE
+    OPEN
+    FETCH
+    CLOSE
+Exception Handling
+
+EG: Explicit Cursor without FOR LOOP
+  DECLARE
+    CURSOR cur IS SELECT col1,col2 from bb_table where col1 = 7;
+    TYPE type_bas IS RECORD(
+      col1 bb_table.col1%type, col2 bb_table.col2%type
+    );
+    one_bas type_bas;
+    rate NUMBER;
+  BEGIN
+    OPEN cur;
+      LOOP
+        FETCH cur INTO one_bas;
+        EXIT WHEN cur%NOTFOUND;
+        IF one_bas.col1 = 1 THEN rate = 10; END IF;
+        IF one_bas.col1 = 2 THEN rate = 20; END IF;
+      END LOOP;
+    CLOSE cur;
+  END;
+
+EG: Explicit Cursor with FOR LOOP
+  DECLARE
+    CURSOR cur IS SELECT col1,col2 from bb_table where col1 = 7;
+    TYPE type_bas IS RECORD(
+      col1 bb_table.col1%type, col2 bb_table.col2%type
+    );
+    one_bas type_bas;
+    rate NUMBER;
+  BEGIN
+    OPEN cur;
+      LOOP
+        FETCH cur INTO one_bas;
+        EXIT WHEN cur%NOTFOUND;
+        IF one_bas.col1 = 1 THEN rate = 10; END IF;
+        IF one_bas.col1 = 2 THEN rate = 20; END IF;
+      END LOOP;
+    CLOSE cur;
+  END;
+  
