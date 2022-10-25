@@ -11,7 +11,8 @@ Cursor
       For循环会自动打开游标，关闭游标，并且自动会让游标指向一条记录(https://zhuanlan.zhihu.com/p/512772381)
 Exception Handling
 
-
+https://zhuanlan.zhihu.com/p/512772381
+https://blog.csdn.net/qq_36743482/article/details/79354036
 
 
 EG: Explicit Cursor without FOR LOOP
