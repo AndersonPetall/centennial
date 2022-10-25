@@ -1,11 +1,18 @@
 Cursor
   Implicit Cursor
   Explicit Cursor 
-    DECLARE
-    OPEN
-    FETCH
-    CLOSE
+    without FOR LOOP
+      DECLARE
+      OPEN
+      FETCH
+      CLOSE
+    with FOR LOOP
+      Handles tasks automatically for processing each row returned by a cursor (record declaration, fetch, ending loop)
+      For循环会自动打开游标，关闭游标，并且自动会让游标指向一条记录
 Exception Handling
+
+
+
 
 EG: Explicit Cursor without FOR LOOP
   DECLARE
@@ -26,22 +33,78 @@ EG: Explicit Cursor without FOR LOOP
     CLOSE cur;
   END;
 
-EG: Explicit Cursor with FOR LOOP
+EG: Explicit Cursor with FOR LOOP(with cursor)
   DECLARE
     CURSOR cur IS SELECT col1,col2 from bb_table where col1 = 7;
-    TYPE type_bas IS RECORD(
-      col1 bb_table.col1%type, col2 bb_table.col2%type
-    );
-    one_bas type_bas;
     rate NUMBER;
   BEGIN
-    OPEN cur;
-      LOOP
-        FETCH cur INTO one_bas;
-        EXIT WHEN cur%NOTFOUND;
-        IF one_bas.col1 = 1 THEN rate = 10; END IF;
-        IF one_bas.col1 = 2 THEN rate = 20; END IF;
-      END LOOP;
-    CLOSE cur;
+    FOR col3 IN cur LOOP
+      IF cur.col1 = 'C' THEN rate:= cur.col2*2;
+      ELSIF cur.col2 = 'D' THEN rate:=cur.col2*3; 
+      END IF;
+      UPDATE bb_table SET col3 = rate WHERE CURRENT OF cur;
+    END LOOP;
+    COMMIT;
+  END;
+EG: Explicit Cursor with FOR LOOP(without cursor)
+  DECLARE
+    rate NUMBER;
+  BEGIN
+    FOR col3 IN (SELECT col1,col2 from bb_table where col1 = 7) LOOP
+      IF col1 = 'C' THEN rate:= cur.col2*2;
+      ELSIF col2 = 'D' THEN rate:=cur.col2*3; 
+      END IF;
+    END LOOP;
   END;
   
+EG: Cursor with Parameters
+  DECLARE
+    CURSOR cur(col1 NUMBER, col2 VARCHAR(2)) IS SELECT col3, col4 FROM bb_table where col3 = col1 and col4 = col2;
+    TYPE type_basket IS RECORD(
+    col3 bb_table.col3%TYPE;
+    col4 bb_table.col4%TYPE;
+    );
+    one type_basket;
+  BEGIN
+    FOR one IN cur(col1_value1, col2_value1) LOOP
+      DBMS_OUTPUT.PUT_LINE(one.col3||one.col4);
+    END LOOP;
+    FOR one IN cur(col1_value2, col2_value2) LOOP
+      DBMS_OUTPUT.PUT_LINE(one.col3||one.col4);
+    END LOOP;
+  END;
+EG: Cursor with Parameters
+  DECLARE
+    CURSOR cur(col1 NUMBER, col2 VARCHAR(2)) IS SELECT col3, col4 FROM bb_table where col3 = col1 and col4 = col2;
+  BEGIN
+    OPEN cur(40, 'name1')
+    ...
+    COLSE cur;
+    OPEN cur(50, 'name2')
+    ...
+    COLSE cur;
+  END;
+  
+EG: Cursor Variables with REF CURSOR
+  DECLARE
+    CURSOR cur SYS_REFCURSOR;
+    row1 table1%ROWTYPE;
+    row2 table2%TOWTYPE;
+    id NUMBER :=1; num NUMBER :=3;
+  BEGIN
+    IF id = 1 THEN
+      OPEN cur FOR SELECT * from table1 where col1 = num;
+      LOOP 
+        FETCH cur INTO row1; 
+        EXIT WHEN cur%NOTFOUND
+        DBMS_OUTPUT.PUT_LINE(row1.col1);
+      END LOOP;
+    ELSIF id = 2 THEN
+      OPEN cur FOR SELECT * from table2 where col1 = num;
+      LOOP 
+        FETCH cur INTO row2; 
+        EXIT WHEN cur%NOTFOUND
+        DBMS_OUTPUT.PUT_LINE(row2.col1);
+      END LOOP;
+    END IF;
+  END;
