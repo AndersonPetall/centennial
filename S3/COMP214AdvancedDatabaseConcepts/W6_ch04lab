@@ -89,154 +89,126 @@ END;
 
 
 4-4 Using Exception Handling
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: modify a case PLSQL 
+Condition: 
+From: 
 
+original:
 DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
+  lv_tax_num NUMBER(2,2);
+BEGIN
+ CASE  'NJ' 
+  WHEN 'VA' THEN lv_tax_num := .04;
+  WHEN 'NC' THEN lv_tax_num := .02;  
+  WHEN 'NY' THEN lv_tax_num := .06;  
+ END CASE;
+ DBMS_OUTPUT.PUT_LINE('tax rate = '||lv_tax_num);
+END;
+modify:
+DECLARE
+  lv_tax_num NUMBER(2,2);
+BEGIN
+ CASE  'NJ' 
+  WHEN 'VA' THEN lv_tax_num := .04;
+  WHEN 'NC' THEN lv_tax_num := .02;  
+  WHEN 'NY' THEN lv_tax_num := .06;  
+ END CASE;
+ DBMS_OUTPUT.PUT_LINE('tax rate = '||lv_tax_num);
+EXCEPTION
+  WHEN CASE_NOT_FOUND THEN DBMS_OUTPUT.PUT_LINE('case not found');
+END;
+
+
+4-5 Handling Predefined Exceptions
+Require: modify a SELECT PLSQL 
+Condition: 
+From:
+
+original:
+DECLARE
+ rec_shopper bb_shopper%ROWTYPE;
+BEGIN
+ SELECT * INTO rec_shopper FROM bb_shopper WHERE idShopper = lv_shopper_num;
+END;
+modify:
+DECLARE
+ rec_shopper bb_shopper%ROWTYPE;
+ lv_shopper_num NUMBER := 9999;
+BEGIN
+ SELECT * INTO rec_shopper FROM bb_shopper WHERE idShopper = lv_shopper_num;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('Invalid shopper ID');
 END;
 
 
 
-4-5 Using an Explicit Cursor
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
 
+4-6 Handling Exceptions with Undefined Errors
+Require: modify a INSERT PLSQL (voilate the check constraint)
+Condition: 
+From: 
+
+original:
+ALTER TABLE bb_basketitem ADD CONSTRAINT bitems_qty_ck CHECK (quantity < 20);
+BEGIN
+  INSERT INTO bb_basketitem VALUES (88,8,10.8,21,16,2,3);
+END;
+modify:
+ALTER TABLE bb_basketitem ADD CONSTRAINT bitems_qty_ck CHECK (quantity < 20);
 DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
+  violated EXCEPTION;
+  PRAGMA EXCEPTION_INIT(violated, -02290); 
+BEGIN
+  INSERT INTO bb_basketitem VALUES (88,8,10.8,21,16,2,3);
+  IF SQL%NOTFOUND THEN RAISE violated; END IF;
+EXCEPTION
+  WHEN violated THEN DBMS_OUTPUT.PUT_LINE('Check Quantity');
 END;
 
 
 
-4-6 Using an Explicit Cursor
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+4-7 Handling Exceptions with User-Defined Errors
+Require: 
+Condition: 
+From: 
 
-DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
+original:
+ALTER TABLE bb_basketitem ADD CONSTRAINT bitems_qty_ck CHECK (quantity < 20);
+BEGIN
+  INSERT INTO bb_basketitem VALUES (88,8,10.8,21,16,2,3);
 END;
-
-
-
-4-7 Using an Explicit Cursor
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
-
+modify:
+ALTER TABLE bb_basketitem ADD CONSTRAINT bitems_qty_ck CHECK (quantity < 20);
 DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
+  violated EXCEPTION;
+  PRAGMA EXCEPTION_INIT(violated, -02290); 
+BEGIN
+  INSERT INTO bb_basketitem VALUES (88,8,10.8,21,16,2,3);
+  IF SQL%NOTFOUND THEN RAISE violated; END IF;
+EXCEPTION
+  WHEN violated THEN DBMS_OUTPUT.PUT_LINE('Check Quantity');
 END;
 
 
 
 4-8 Using an Explicit Cursor
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: 
+Condition: 
+From: 
 
+original:
+ALTER TABLE bb_basketitem ADD CONSTRAINT bitems_qty_ck CHECK (quantity < 20);
+BEGIN
+  INSERT INTO bb_basketitem VALUES (88,8,10.8,21,16,2,3);
+END;
+modify:
+ALTER TABLE bb_basketitem ADD CONSTRAINT bitems_qty_ck CHECK (quantity < 20);
 DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
+  violated EXCEPTION;
+  PRAGMA EXCEPTION_INIT(violated, -02290); 
+BEGIN
+  INSERT INTO bb_basketitem VALUES (88,8,10.8,21,16,2,3);
+  IF SQL%NOTFOUND THEN RAISE violated; END IF;
+EXCEPTION
+  WHEN violated THEN DBMS_OUTPUT.PUT_LINE('Check Quantity');
 END;
