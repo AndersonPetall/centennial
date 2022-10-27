@@ -150,7 +150,7 @@ EG: Exception Handling - Undefined Error
 EG: Exception Handling - Undefined Error
   DECLARE
     ex_name1 EXCEPTION;
-    PRAGRAM EXCETPTION_INIT(ex_name1, -20274); 
+    PRAGMA EXCEPTION_INIT(ex_name1, -20274); 
   BEGIN
     DELETE FROM table1 where id = 1;
     IF SQL%NOTFOUND THEN RAISE ex_name1; ENDIF;
