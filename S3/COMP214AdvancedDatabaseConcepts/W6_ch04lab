@@ -30,68 +30,65 @@ END;
 
 
 4-2 Using a CURSOR FOR Loop
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: update one column(promo) in table depend on total purchased (quantity * price)
+Condition: promo = 'A' when purchased > 100, promo = 'B' when 50<=purchased<=99
+From: BB_BASKETITEM(purchased), BB_PRODUCT(purchased), BB_SHOPPER(promo)
 
+edition - self
 DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  CURSOR cur IS SELECT a.idshopper, a.promo, b.total FROM bb_shopper a,(SELECT c.idshopper, 
+  SUM(d.quantity*d.price) total from bb_basketitem d, bb_basket c WHERE c.idbasket = d.idbasket group by idshopper) b 
+  WHERE a.idshopper = b.idshopper FOR  UPDATE OF a.idshopper NOWAIT;
+BEGIN
+  FOR shopper IN cur LOOP
+    IF shopper.total > 100 THEN UPDATE bb_shopper SET promo = 'A' WHERE CURRENT OF cur; END IF;
+    IF shopper.total >=50 AND shopper.total <= 99  THEN UPDATE bb_shopper SET promo = 'B' WHERE CURRENT OF cur; END IF;
   END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
+  COMMIT;
+END;
+
+edition - book
+DECLARE
+  CURSOR cur IS SELECT a.idshopper, a.promo, b.total FROM bb_shopper a,(SELECT c.idshopper, 
+  SUM(d.quantity*d.price) total from bb_basketitem d, bb_basket c WHERE c.idbasket = d.idbasket group by idshopper) b 
+  WHERE a.idshopper = b.idshopper FOR  UPDATE OF a.idshopper NOWAIT;
+  promotxt CHAR(1) := 'X';
+BEGIN
+  FOR shopper IN cur LOOP
+    IF shopper.total > 100 THEN promotxt := 'A'; END IF;
+    IF shopper.total BETWEEN 50 AND 99 THEN promotxt := 'B'; END IF;
+    IF promotxt <> 'X' THEN UPDATE bb_shopper SET promo = promotxt WHERE CURRENT OF cur; END IF;
+  END LOOP;
+  COMMIT;
 END;
 
 
 
-4-3 Using an Explicit Cursor
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+4-3 Using Implicit Cursors
+Require: modify anonymous block to show the number of rows updated
+Condition: 
+From: BB_SHOPPER(promo)
 
+normal:
+UPDATE bb_shopper SET promo = NULL;
+anonymous block:
+BEGIN
+ UPDATE bb_shopper SET promo = NULL WHERE promo IS NOT NULL;
+END;
+modify:
 DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
+  i NUMBER;
 BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
+  UPDATE bb_shopper SET promo = 'B' WHERE idshopper IN (21,23,25);
+  i := SQL%rowcount;
+  COMMIT;
+  DBMS_OUTPUT.PUT_LINE('number of rows updated  '||i); 
 END;
 
 
 
-4-4 Using an Explicit Cursor
+
+4-4 Using Exception Handling
 Require: whether item in stock (comparing the item quantity with the product stock amount)
 Condition: (entered idbasket(idbasket == 6))
 From: BB_BASKETITEM, BB_PRODUCT
