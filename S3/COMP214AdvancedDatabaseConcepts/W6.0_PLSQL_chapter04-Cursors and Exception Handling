@@ -10,6 +10,15 @@ Cursor
       Handles tasks automatically for processing each row returned by a cursor (record declaration, fetch, ending loop)
       For循环会自动打开游标，关闭游标，并且自动会让游标指向一条记录(https://zhuanlan.zhihu.com/p/512772381)
 Exception Handling
+  Predefined Oracle Errors
+    NO_DATA_FOUND / TOO_MANY_ROWS / CASE_NOT_FOUND / ZERO_DIVIDE / DUP_VAL_ON_INDEX
+  Undefined Error
+    行为违反了oracle的规则，有报错编号和报错信息，但是系统并未定义异常名称，那么我们自己将这种错误定义一个名字，并将名字和错误号绑定。
+  User-Defined Exception
+  Additional
+    WHEN OTHERS: traps all errors not specifically addressed
+    SQLCODE:  error code
+    SQLERRM:  error message
 
 https://zhuanlan.zhihu.com/p/512772381
 https://blog.csdn.net/qq_36743482/article/details/79354036
@@ -109,3 +118,76 @@ EG: Cursor Variables with REF CURSOR
       END LOOP;
     END IF;
   END;
+  
+  
+  
+  
+
+EG: Exception Handling - Predefined Oracle Errors
+  DECLARE
+    col table1.col1%type;
+  BEGIN
+    SELECT col1 INTO col FROM table1 where id = 1;
+    DBMS_OUTPUT.PUT_LINE(col);
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      DBMS_OUTPUT.PUT_LINE('can not found data at that condition');
+    WHEN TOO_MANY_ROWS THEN 
+      DBMS_OUTPUT.PUT_LINE('too many data at that condition');
+      DBMS_OUTPUT.PUT_LINE('please be specify');
+  END;
+  
+EG: Exception Handling - Undefined Error
+  DECLARE
+    ex_name1 EXCEPTION;
+    PRAGRAM EXCETPTION_INIT(ex_name1, -20274);  --当错误为-20274的时候,定义错误为ex_name1
+  BEGIN
+    DELETE FROM table1 where id = 1;
+  EXCEPTION
+    WHEN ex_name1 THEN
+      DBMS_OUTPUT.PUT_LINE('error message');
+  END;
+EG: Exception Handling - Undefined Error
+  DECLARE
+    ex_name1 EXCEPTION;
+    PRAGRAM EXCETPTION_INIT(ex_name1, -20274); 
+  BEGIN
+    DELETE FROM table1 where id = 1;
+    IF SQL%NOTFOUND THEN RAISE ex_name1; ENDIF;
+    COMMIT;
+  EXCEPTION
+    WHEN ex_name1 THEN
+      DBMS_OUTPUT.PUT_LINE('error message');
+  END;
+  
+  
+EG: Exception Handling - User-Defined Exception
+  DECLARE
+    ex1 EXCEPTION;
+  BEGIN
+    UPDATE table SET col1 = 1 WHERE id = 77;
+    IF SQL%NOTFOUND THEN RAISE ex1;
+    ELSE DBMS_OUTPUT.PUT_LINE('not exception');
+    END IF;
+  EXCEPTION
+    WHEN ex1 THEN
+      DBMS_OUTPUT.PUT_LINE('invalid ID');
+  END;
+  
+  
+EG: Exception Handling - Additional(OTHERS,SQLCODE,SQLERRM)
+  DECLARE
+    num1 NUMBER :=1; num2 NUMBER :=2; num3 NUMBER :=3;
+  BEGIN
+    INSERT INTO table(col1,col2,col3) VALUES(num1,num2,num3);
+    IF SQL%FOUND THEN DBMS_OUTPUT.PUT_LINE('successful'); COMMIT;
+    END IF;
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      DBMS_OUTPUT.PUT_LINE('fail');
+    WHEN OTHERS THEN
+      DBMS_OUTPUT.PUT_LINE('error code'||SQLCODE);
+      DBMS_OUTPUT.PUT_LINE('error message'||SQLERRM);
+  END;
+  
+  
