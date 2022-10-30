@@ -63,8 +63,8 @@ EG: %TYPE
 EG: %RECORD
   DECLARE
     TYPE type_basket IS RECORD(
-    lv_data BB_BASKET.dtcreate%TYPE;
-    lv_num BB_BASKET.quantity%TYPE;
+    lv_data BB_BASKET.dtcreate%TYPE,
+    lv_num BB_BASKET.quantity%TYPE,
     );
     rec_basket type_basket;
     lv_days;
