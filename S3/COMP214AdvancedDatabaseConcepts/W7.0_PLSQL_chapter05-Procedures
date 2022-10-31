@@ -1,1 +1,20 @@
-111
+
+
+
+
+Procedure Statement Syntax
+CREATE[OR REPLACE] PROCEDURE
+  procudure_name
+    [(parameter1_name[mode] datatype,
+      parameter2_name[mode] datatype,
+      ... )]
+  IS|AS
+    declaration section
+  BEGIN 
+    executable section
+  EXCEPTION
+    exception handlers
+  END;
+
+
+    
