@@ -1,6 +1,10 @@
 
 
-
+3 ways of providing parameter
+  by position  (val1, val2...)
+  by name  (par1=>val1, par2=>val2...)
+  mixed  (val2, par1=>val1...)
+  
 
 Procedure Statement Syntax
 CREATE[OR REPLACE] PROCEDURE
@@ -14,7 +18,33 @@ CREATE[OR REPLACE] PROCEDURE
     executable section
   EXCEPTION
     exception handlers
-  END;
+  END procudure_name;
 
 
     
+EG: Procedure IN+OUT
+create or replace PROCEDURE　SHIP_COST_SP
+  (p_qty IN NUMBER,
+   p_ship OUT NUMBER)
+AS 
+BEGIN
+  IF p_qty > 10 THEN p_ship := 11.00;
+  ELSIF p_qty > 10 THEN p_ship := 11.00;
+  ELSE p_qty > 10 THEN p_ship := 11.00;
+  END IF;
+END SHIP_COST_SP;
+
+DECLARE
+  num NUMBER(6,2);
+BEGIN 
+  SHIP_COST_SP(7, num);
+  DBMS_OUTPUT.PUT_LINE('ship cost = '||num);
+END;
+
+DECLARE
+  num NUMBER(6,2);
+BEGIN 
+  SHIP_COST_SP(p_ship=>num,p_qty=>7);
+  DBMS_OUTPUT.PUT_LINE('ship cost = '||num);
+END;
+
