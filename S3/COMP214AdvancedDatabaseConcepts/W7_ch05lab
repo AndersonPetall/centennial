@@ -1,1 +1,281 @@
-11
+5-1 Creating a Procedure
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+DECLARE
+  CURSOR onecursor IS 
+    SELECT idbasket, quantity, stock FROM bb_basketitem 
+    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
+  TYPE typebas IS RECORD(
+    id bb_basketitem.idbasket%type,
+    quantity bb_basketitem.quantity%type,
+    stock bb_product.stock%type
+  );
+  onebas typebas;
+  flag char(1) := 'Y';
+BEGIN 
+  OPEN onecursor;
+  LOOP
+    FETCH onecursor INTO onebas;
+      EXIT WHEN onecursor%NOTFOUND;
+      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  END LOOP;
+  CLOSE onecursor;
+  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
+   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  END IF;
+END;
+
+
+
+5-2 Using a Procedure with IN Parameters
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+DECLARE
+  CURSOR onecursor IS 
+    SELECT idbasket, quantity, stock FROM bb_basketitem 
+    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
+  TYPE typebas IS RECORD(
+    id bb_basketitem.idbasket%type,
+    quantity bb_basketitem.quantity%type,
+    stock bb_product.stock%type
+  );
+  onebas typebas;
+  flag char(1) := 'Y';
+BEGIN 
+  OPEN onecursor;
+  LOOP
+    FETCH onecursor INTO onebas;
+      EXIT WHEN onecursor%NOTFOUND;
+      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  END LOOP;
+  CLOSE onecursor;
+  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
+   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  END IF;
+END;
+
+
+
+5-3 Calculating the Tax on an Order
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+DECLARE
+  CURSOR onecursor IS 
+    SELECT idbasket, quantity, stock FROM bb_basketitem 
+    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
+  TYPE typebas IS RECORD(
+    id bb_basketitem.idbasket%type,
+    quantity bb_basketitem.quantity%type,
+    stock bb_product.stock%type
+  );
+  onebas typebas;
+  flag char(1) := 'Y';
+BEGIN 
+  OPEN onecursor;
+  LOOP
+    FETCH onecursor INTO onebas;
+      EXIT WHEN onecursor%NOTFOUND;
+      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  END LOOP;
+  CLOSE onecursor;
+  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
+   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  END IF;
+END;
+
+
+
+5-4 Updating Columns in a Table
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+DECLARE
+  CURSOR onecursor IS 
+    SELECT idbasket, quantity, stock FROM bb_basketitem 
+    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
+  TYPE typebas IS RECORD(
+    id bb_basketitem.idbasket%type,
+    quantity bb_basketitem.quantity%type,
+    stock bb_product.stock%type
+  );
+  onebas typebas;
+  flag char(1) := 'Y';
+BEGIN 
+  OPEN onecursor;
+  LOOP
+    FETCH onecursor INTO onebas;
+      EXIT WHEN onecursor%NOTFOUND;
+      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  END LOOP;
+  CLOSE onecursor;
+  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
+   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  END IF;
+END;
+
+
+
+5-5 Updating Order Status
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+DECLARE
+  CURSOR onecursor IS 
+    SELECT idbasket, quantity, stock FROM bb_basketitem 
+    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
+  TYPE typebas IS RECORD(
+    id bb_basketitem.idbasket%type,
+    quantity bb_basketitem.quantity%type,
+    stock bb_product.stock%type
+  );
+  onebas typebas;
+  flag char(1) := 'Y';
+BEGIN 
+  OPEN onecursor;
+  LOOP
+    FETCH onecursor INTO onebas;
+      EXIT WHEN onecursor%NOTFOUND;
+      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  END LOOP;
+  CLOSE onecursor;
+  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
+   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  END IF;
+END;
+
+
+
+5-6 Returning Order Status Information
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+DECLARE
+  CURSOR onecursor IS 
+    SELECT idbasket, quantity, stock FROM bb_basketitem 
+    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
+  TYPE typebas IS RECORD(
+    id bb_basketitem.idbasket%type,
+    quantity bb_basketitem.quantity%type,
+    stock bb_product.stock%type
+  );
+  onebas typebas;
+  flag char(1) := 'Y';
+BEGIN 
+  OPEN onecursor;
+  LOOP
+    FETCH onecursor INTO onebas;
+      EXIT WHEN onecursor%NOTFOUND;
+      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  END LOOP;
+  CLOSE onecursor;
+  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
+   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  END IF;
+END;
+
+
+
+5-7 Identifying Customers
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+DECLARE
+  CURSOR onecursor IS 
+    SELECT idbasket, quantity, stock FROM bb_basketitem 
+    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
+  TYPE typebas IS RECORD(
+    id bb_basketitem.idbasket%type,
+    quantity bb_basketitem.quantity%type,
+    stock bb_product.stock%type
+  );
+  onebas typebas;
+  flag char(1) := 'Y';
+BEGIN 
+  OPEN onecursor;
+  LOOP
+    FETCH onecursor INTO onebas;
+      EXIT WHEN onecursor%NOTFOUND;
+      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  END LOOP;
+  CLOSE onecursor;
+  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
+   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  END IF;
+END;
+
+
+
+5-8 Adding Items to a Basket
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+DECLARE
+  CURSOR onecursor IS 
+    SELECT idbasket, quantity, stock FROM bb_basketitem 
+    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
+  TYPE typebas IS RECORD(
+    id bb_basketitem.idbasket%type,
+    quantity bb_basketitem.quantity%type,
+    stock bb_product.stock%type
+  );
+  onebas typebas;
+  flag char(1) := 'Y';
+BEGIN 
+  OPEN onecursor;
+  LOOP
+    FETCH onecursor INTO onebas;
+      EXIT WHEN onecursor%NOTFOUND;
+      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  END LOOP;
+  CLOSE onecursor;
+  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
+   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  END IF;
+END;
+
+
+
+5-9 Creating a Logon Procedure
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+DECLARE
+  CURSOR onecursor IS 
+    SELECT idbasket, quantity, stock FROM bb_basketitem 
+    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
+  TYPE typebas IS RECORD(
+    id bb_basketitem.idbasket%type,
+    quantity bb_basketitem.quantity%type,
+    stock bb_product.stock%type
+  );
+  onebas typebas;
+  flag char(1) := 'Y';
+BEGIN 
+  OPEN onecursor;
+  LOOP
+    FETCH onecursor INTO onebas;
+      EXIT WHEN onecursor%NOTFOUND;
+      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  END LOOP;
+  CLOSE onecursor;
+  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
+   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  END IF;
+END;
+
+
+
+
+
