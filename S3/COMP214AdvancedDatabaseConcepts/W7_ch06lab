@@ -1,1 +1,248 @@
+6-1 Formatting Numbers as Currency
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+DECLARE
+  CURSOR onecursor IS 
+    SELECT idbasket, quantity, stock FROM bb_basketitem 
+    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
+  TYPE typebas IS RECORD(
+    id bb_basketitem.idbasket%type,
+    quantity bb_basketitem.quantity%type,
+    stock bb_product.stock%type
+  );
+  onebas typebas;
+  flag char(1) := 'Y';
+BEGIN 
+  OPEN onecursor;
+  LOOP
+    FETCH onecursor INTO onebas;
+      EXIT WHEN onecursor%NOTFOUND;
+      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  END LOOP;
+  CLOSE onecursor;
+  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
+   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  END IF;
+END;
+
+
+
+6-2 Calculating a Shopper’s Total Spending
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+DECLARE
+  CURSOR onecursor IS 
+    SELECT idbasket, quantity, stock FROM bb_basketitem 
+    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
+  TYPE typebas IS RECORD(
+    id bb_basketitem.idbasket%type,
+    quantity bb_basketitem.quantity%type,
+    stock bb_product.stock%type
+  );
+  onebas typebas;
+  flag char(1) := 'Y';
+BEGIN 
+  OPEN onecursor;
+  LOOP
+    FETCH onecursor INTO onebas;
+      EXIT WHEN onecursor%NOTFOUND;
+      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  END LOOP;
+  CLOSE onecursor;
+  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
+   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  END IF;
+END;
+
+
+
+6-3 Calculating a Shopper’s Total Number of Orders
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+DECLARE
+  CURSOR onecursor IS 
+    SELECT idbasket, quantity, stock FROM bb_basketitem 
+    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
+  TYPE typebas IS RECORD(
+    id bb_basketitem.idbasket%type,
+    quantity bb_basketitem.quantity%type,
+    stock bb_product.stock%type
+  );
+  onebas typebas;
+  flag char(1) := 'Y';
+BEGIN 
+  OPEN onecursor;
+  LOOP
+    FETCH onecursor INTO onebas;
+      EXIT WHEN onecursor%NOTFOUND;
+      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  END LOOP;
+  CLOSE onecursor;
+  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
+   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  END IF;
+END;
+
+
+
+6-4 Identifying the Weekday for an Order Date
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+DECLARE
+  CURSOR onecursor IS 
+    SELECT idbasket, quantity, stock FROM bb_basketitem 
+    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
+  TYPE typebas IS RECORD(
+    id bb_basketitem.idbasket%type,
+    quantity bb_basketitem.quantity%type,
+    stock bb_product.stock%type
+  );
+  onebas typebas;
+  flag char(1) := 'Y';
+BEGIN 
+  OPEN onecursor;
+  LOOP
+    FETCH onecursor INTO onebas;
+      EXIT WHEN onecursor%NOTFOUND;
+      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  END LOOP;
+  CLOSE onecursor;
+  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
+   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  END IF;
+END;
+
+
+
+6-5 Calculating Days Between Ordering and Shipping
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+DECLARE
+  CURSOR onecursor IS 
+    SELECT idbasket, quantity, stock FROM bb_basketitem 
+    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
+  TYPE typebas IS RECORD(
+    id bb_basketitem.idbasket%type,
+    quantity bb_basketitem.quantity%type,
+    stock bb_product.stock%type
+  );
+  onebas typebas;
+  flag char(1) := 'Y';
+BEGIN 
+  OPEN onecursor;
+  LOOP
+    FETCH onecursor INTO onebas;
+      EXIT WHEN onecursor%NOTFOUND;
+      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  END LOOP;
+  CLOSE onecursor;
+  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
+   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  END IF;
+END;
+
+
+
+6-6 Adding Descriptions for Order Status Codes
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+DECLARE
+  CURSOR onecursor IS 
+    SELECT idbasket, quantity, stock FROM bb_basketitem 
+    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
+  TYPE typebas IS RECORD(
+    id bb_basketitem.idbasket%type,
+    quantity bb_basketitem.quantity%type,
+    stock bb_product.stock%type
+  );
+  onebas typebas;
+  flag char(1) := 'Y';
+BEGIN 
+  OPEN onecursor;
+  LOOP
+    FETCH onecursor INTO onebas;
+      EXIT WHEN onecursor%NOTFOUND;
+      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  END LOOP;
+  CLOSE onecursor;
+  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
+   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  END IF;
+END;
+
+
+
+6-7 Calculating an Order’s Tax Amount
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+DECLARE
+  CURSOR onecursor IS 
+    SELECT idbasket, quantity, stock FROM bb_basketitem 
+    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
+  TYPE typebas IS RECORD(
+    id bb_basketitem.idbasket%type,
+    quantity bb_basketitem.quantity%type,
+    stock bb_product.stock%type
+  );
+  onebas typebas;
+  flag char(1) := 'Y';
+BEGIN 
+  OPEN onecursor;
+  LOOP
+    FETCH onecursor INTO onebas;
+      EXIT WHEN onecursor%NOTFOUND;
+      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  END LOOP;
+  CLOSE onecursor;
+  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
+   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  END IF;
+END;
+
+
+
+6-8 Identifying Sale Products
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+DECLARE
+  CURSOR onecursor IS 
+    SELECT idbasket, quantity, stock FROM bb_basketitem 
+    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
+  TYPE typebas IS RECORD(
+    id bb_basketitem.idbasket%type,
+    quantity bb_basketitem.quantity%type,
+    stock bb_product.stock%type
+  );
+  onebas typebas;
+  flag char(1) := 'Y';
+BEGIN 
+  OPEN onecursor;
+  LOOP
+    FETCH onecursor INTO onebas;
+      EXIT WHEN onecursor%NOTFOUND;
+      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
+  END LOOP;
+  CLOSE onecursor;
+  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
+   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  END IF;
+END;
+
+
 
