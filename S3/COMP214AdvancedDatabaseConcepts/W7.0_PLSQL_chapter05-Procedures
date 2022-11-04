@@ -27,9 +27,9 @@ create or replace PROCEDURE　SHIP_COST_SP
    p_ship OUT NUMBER)
 AS 
 BEGIN
-  IF p_qty > 10 THEN p_ship := 11.00;
-  ELSIF p_qty > 10 THEN p_ship := 11.00;
-  ELSE p_qty > 10 THEN p_ship := 11.00;
+  IF p_qty > 10 THEN p_ship := 21.00;
+  ELSIF p_qty > 5 THEN p_ship := 11.00;
+  ELSE THEN p_ship := 1.00;
   END IF;
 END SHIP_COST_SP;
 
