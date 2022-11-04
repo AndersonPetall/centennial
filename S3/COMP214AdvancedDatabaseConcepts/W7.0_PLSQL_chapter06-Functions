@@ -1,1 +1,88 @@
-111
+
+
+2 ways of passing parameter values
+  passed by reference - create pointer to value 
+  passed by value - copy value
+  
+
+
+
+Function Statement Syntax
+CREATE[OR REPLACE] FUNCTION function_name
+    [(parameter1_name[mode] datatype,
+      parameter2_name[mode] datatype,
+      ... )]
+    RETURN return_value_data_type; 
+  IS|AS
+    declaration section
+  BEGIN 
+    executable section
+    RETURN variable_name;
+  EXCEPTION
+    exception handlers
+  END [procudure_name];
+
+
+
+EG: Function 
+create or replace FUNCTION　ship_cal
+  (p_qty IN NUMBER)
+RETURN NUMBER
+IS
+  lv_ship NUMBER(5,2);
+BEGIN
+  IF p_qty > 10 THEN lv_ship := 21.00;
+  ELSIF p_qty > 5 THEN lv_ship := 11.00;
+  ELSE lv_ship := 1.00;
+  END IF;
+  RETURN lv_ship;
+END;
+
+
+EG: Function 
+create or replace FUNCTION　mem_sf
+  (p_id IN NUMBER,
+   P_name IN VARCHAR)
+RETURN VARCHAR2
+IS
+  lv_text VARCHAR2(35);
+BEGIN
+  lv_text := 'Member ' || p_id || ' - ' || p_name;
+  RETURN lv_text;
+END;
+
+
+EG: Function - OUT Mode
+create or replace FUNCTION　ship_cal1
+  (p_qty IN NUMBER)
+RETURN NUMBER
+IS
+BEGIN
+  IF p_qty > 10 THEN RETURN 21.00;
+  ELSIF p_qty > 5 THEN RETURN 11.00;
+  ELSE RETURN 1.00;
+  END IF;
+END;
+
+
+
+EG: Procedure - pass by reference 
+create or replace PROCEDURE　test_sp
+  (p_in IN NUMBER,
+   p_out IN OUT NOCOPY VARCHAR2)
+IS
+BEGIN
+  p_out := 'N';
+  IF p_in = 1 THEN RAISE NO_DATA_FOUND;
+  END IF;
+END;
+
+
+
+
+
+
+
+EG: Function - delete functions
+syntax: FROP FUNCTION function_name;
+
