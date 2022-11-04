@@ -18,11 +18,11 @@ CREATE[OR REPLACE] PROCEDURE
     executable section
   EXCEPTION
     exception handlers
-  END procudure_name;
+  END [procudure_name];
 
 
     
-EG: Procedure IN+OUT
+EG: Procedure IN var1, OUT var 2
 create or replace PROCEDURE　SHIP_COST_SP
   (p_qty IN NUMBER,
    p_ship OUT NUMBER)
@@ -48,3 +48,55 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE('ship cost = '||num);
 END;
 
+
+
+EG: Procedure IN+OUT
+create or replace PROCEDURE　phone_fmt_sp
+  (p_phone IN OUT VARCHAR2)
+IS
+BEGIN
+  p_phone := '(' || SUBSTR(p_phone,1,3) || ')' || SUBSTR(p_phone,4,3) || '-' ||  SUBSTR(p_phone,7,3);
+END;
+
+
+
+EG: Procedure Calling another proceure in a procudure
+create or replace PROCEDURE　order_total_sp
+  (p_phone IN bb_basketitem.idbasket%TYPE,
+   p_cnt OUT NUMBER,
+   p_sub OUT NUMBER)
+IS
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('procedure order_total_sp called');
+  SELECT SUM(quantity), SUM(quantity*price) INTO p_cnt, p_sub FROM bb_basketitem WHERE idbasket = p_baskid;
+  ship_cost_sp(p_cnt,p_ship);
+  DBMS_OUTPUT.PUT_LINE('procedure order_total_sp ended');
+END order_total_sp;
+
+
+EG: Procedure - DESCRIBE Command
+function: lists the parameters of a program unit
+DESCRIBE order_total_sp;
+
+
+EG: Procedure - RAISE_APPLICATION_ERROR
+function: raise the error in procedure
+syntax:RAISE_APPLICATION_ERROR( error_number_in IN NUMBER, error_msg_in IN VARCHAR2);
+create or replace PROCEDURE　stock_ck_sp
+  (p_qty IN NUMBER,
+   p_prod IN NUMBER)
+IS
+  stock_num bb_product.idProduct%TYPE;
+BEGIN
+  SELECT stock INTO stock_num FROM bb_product WHERE idProduct = p_prod;
+  IF p_qty > stock_num THEN 
+    RAISE_APPLICATION_ERROR(-7777,'Not enough in stock,' || 'Request = ' || p_qty);
+  END IF;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('No stock found');
+END order_total_sp;
+
+
+
+EG: Procedure - remove a procedure
+syntax: DROM PROCEDURE procedure_name;
