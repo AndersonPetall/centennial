@@ -7,8 +7,7 @@
   
 
 Procedure Statement Syntax
-CREATE[OR REPLACE] PROCEDURE
-  procudure_name
+CREATE[OR REPLACE] PROCEDURE procudure_name
     [(parameter1_name[mode] datatype,
       parameter2_name[mode] datatype,
       ... )]
