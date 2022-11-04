@@ -1,9 +1,9 @@
 
 
-3 ways of providing parameter
-  by position  (val1, val2...)
-  by name  (par1=>val1, par2=>val2...)
-  mixed  (val2, par1=>val1...)
+3 ways of transfer parameter
+  Positional  (val1, val2...)
+  Named  (par1=>val1, par2=>val2...)
+  Combination  (val2, par1=>val1...)
   
 
 Procedure Statement Syntax
