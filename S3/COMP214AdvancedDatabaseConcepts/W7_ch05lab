@@ -1,62 +1,47 @@
 5-1 Creating a Procedure
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
 
-DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
 END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
 
 
 
 5-2 Using a Procedure with IN Parameters
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: create a procedure which insert a row
+Condition: entered information
+From: bb_product
 
-DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
+DROP PROCEDURE PROD_ADD_SP;
+CREATE OR REPLACE PROCEDURE prod_add_sp
+  (lv_id IN bb_product.idproduct%TYPE,
+   lv_name IN bb_product.productname%TYPE,
+   lv_description IN bb_product.description%TYPE,
+   lv_image IN VARCHAR2,  // 不能为bb_product.productimage%TYPE  错误(PLS-00201: identifier 'BB__PRODUCT.PRODUCTIMAGE' must be declared)  reference(https://blog.csdn.net/weixin_35531735/article/details/116315202/https://blog.csdn.net/Ruishine/article/details/123042758)
+   lv_price IN bb_product.price%TYPE,
+   lv_active IN bb_product.active%TYPE)
+  IS
+BEGIN
+  INSERT INTO bb_product(idproduct,productname,description,productimage,price,active) VALUES(lv_id,lv_name, lv_description,lv_image,lv_price,lv_active);
 END;
+/
+SELECT * FROM bb_product;
+EXECUTE prod_add_sp(18,'Roasted Blend', 'Well-balanced mix of roasted beans, a medium body', 'roasted.jpg',9.50,1);
 
 
 
