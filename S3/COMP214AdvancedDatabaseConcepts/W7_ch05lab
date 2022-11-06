@@ -46,95 +46,68 @@ EXECUTE prod_add_sp(18,'Roasted Blend', 'Well-balanced mix of roasted beans, a m
 
 
 5-3 Calculating the Tax on an Order
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: enter quantity and statecode to see the tax
+Condition: (entered quantity and statecode)
+From: BB_TAX
 
-DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
+CREATE OR REPLACE PROCEDURE TAX_COST_SP 
+  (state_name IN CHAR, sub_total IN NUMERIC, tax_out OUT NUMBER) 
+AS  rate_tax NUMBER; 
+BEGIN     
+  SELECT taxrate INTO rate_tax FROM BB_TAX WHERE STATE = state_name;    
+  tax_out := sub_total*rate_tax; 
 END;
+/
+DECLARE
+  taxnum NUMBER;
+BEGIN
+  TAX_COST_SP('VA',100,taxnum);
+  DBMS_OUTPUT.PUT_LINE('tax cost = '||taxnum);
+END;
+/
 
 
 
 5-4 Updating Columns in a Table
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: update according to the input
+Condition: (entered value)
+From: bb_basket
 
-DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
+CREATE OR REPLACE PROCEDURE BASKET_CONFIRM_SP 
+  (lv_id IN bb_basket.idbasket%TYPE,
+   lv_subtotal IN bb_basket.subtotal%TYPE,
+   lv_shipping IN bb_basket.shipping%TYPE,
+   lv_tax IN bb_basket.tax%TYPE,
+   lv_total IN bb_basket.total%TYPE) 
+AS 
+BEGIN     
+  UPDATE bb_basket SET subtotal=lv_subtotal,shipping=lv_shipping,
+    tax=lv_tax,total=lv_total,orderplaced=1 WHERE idbasket = lv_id;
+  COMMIT;
 END;
 
 
 
 5-5 Updating Order Status
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: add according to the input
+Condition: (entered value)
+From: bb_basketstatus
 
-DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
+CREATE OR REPLACE PROCEDURE STATUS_SHIP_SP 
+  (lv_idstatus IN bb_basketstatus.idstatus%type,
+   lv_basketid IN bb_basketstatus.idbasket%type, 
+   lv_dtstage IN bb_basketstatus.dtstage%type, 
+   lv_shipper IN bb_basketstatus.shipper%type, 
+   lv_shippingnum IN bb_basketstatus.shippingnum%type)
+AS 
+BEGIN     
+  INSERT INTO bb_basketstatus(idstatus,idbasket,idstage,dtstage,shipper,shippingnum) 
+   VALUES(lv_idstatus,lv_basketid,3,lv_dtstage,lv_shipper,lv_shippingnum);
 END;
+/
+CALL STATUS_SHIP_SP(101,3, date'2020-02-12', 'UPS', 'ZW2384YXK4957');
+
+SELECT * FROM bb_basketstatus;
 
 
 
@@ -143,30 +116,59 @@ Require: whether item in stock (comparing the item quantity with the product sto
 Condition: (entered idbasket(idbasket == 6))
 From: BB_BASKETITEM, BB_PRODUCT
 
-DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+//IF statement
+CREATE OR REPLACE PROCEDURE STATUS_SP 
+  (lv_idstatus IN bb_basketstatus.idstatus%type,
+   lv_message OUT VARCHAR2,
+   lv_dtstage OUT bb_basketstatus.dtstage%type)
+AS 
+BEGIN    
+  SELECT dtstage INTO lv_dtstage FROM bb_basketstatus WHERE idstatus = lv_idstatus;
+  IF lv_idstatus = 1 THEN lv_message := 'Submitted and received';
+  ELSIF lv_idstatus = 2 THEN  lv_message := 'Confirmed, processed, sent to shipping';
+  ELSIF lv_idstatus = 3 THEN  lv_message := 'Shipped';
+  ELSIF lv_idstatus = 4 THEN  lv_message := 'Cancelled';
+  ELSIF lv_idstatus = 5 THEN  lv_message := 'Back-ordered';
   END IF;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('no status is available');
 END;
-
+/
+DECLARE
+  lv_message VARCHAR2(200);
+  lv_dtstage bb_basketstatus.dtstage%type;
+BEGIN
+  STATUS_SP(6,lv_message,lv_dtstage);
+  --DBMS_OUTPUT.PUT_LINE(lv_message||' '||lv_dtstage); 
+END;
+/
+//CASE statement
+CREATE OR REPLACE PROCEDURE STATUS_SP 
+  (lv_idstatus IN bb_basketstatus.idstatus%type,
+   lv_message OUT VARCHAR2,
+   lv_dtstage OUT bb_basketstatus.dtstage%type)
+AS 
+BEGIN    
+  SELECT dtstage INTO lv_dtstage FROM bb_basketstatus WHERE idstatus = lv_idstatus;
+  CASE
+   WHEN lv_idstatus = 1 THEN lv_message := 'Submitted and received';
+   WHEN lv_idstatus = 2 THEN  lv_message := 'Confirmed, processed, sent to shipping';
+   WHEN lv_idstatus = 3 THEN  lv_message := 'Shipped';
+   WHEN lv_idstatus = 4 THEN  lv_message := 'Cancelled';
+   WHEN lv_idstatus = 5 THEN  lv_message := 'Back-ordered';
+  END CASE;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('no status is available');
+END;
+/
+DECLARE
+  lv_message VARCHAR2(200);
+  lv_dtstage bb_basketstatus.dtstage%type;
+BEGIN
+  STATUS_SP(4,lv_message,lv_dtstage);
+  DBMS_OUTPUT.PUT_LINE(lv_message||' '||lv_dtstage); 
+END;
+/
 
 
 5-7 Identifying Customers
