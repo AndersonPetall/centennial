@@ -1,93 +1,59 @@
 6-1 Formatting Numbers as Currency
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: input number, output sentence
+Condition: (entered number)
+From: 
 
-DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
+CREATE OR REPLACE FUNCTION dollar_fmt_sf
+  (p_num NUMBER)
+RETURN VARCHAR2 IS lv_amt_txt VARCHAR2(20);
+BEGIN
+  lv_amt_txt := TO_CHAR(p_num,'$99,999.99');
+  RETURN lv_amt_txt;
 END;
-
+/
+DECLARE
+  lv_amt_num NUMBER(8,2) := 9999.55;
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(dollar_fmt_sf(lv_amt_num));
+END;
+/
+SELECT dollar_fmt_sf(shipping), dollar_fmt_sf(total) FROM bb_basket WHERE idBasket = 3
 
 
 6-2 Calculating a Shopper’s Total Spending
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: calculate total purchase according to shopperid
+Condition: ()
+From: bb_basket
 
-DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
+CREATE OR REPLACE FUNCTION total_purch_sf
+  (lv_idshopper bb_basket.idshopper%type)
+RETURN bb_basket.total%type IS lv_total bb_basket.total%type;
+BEGIN
+  SELECT SUM(TOTAL) INTO lv_total FROM bb_basket WHERE idshopper = lv_idshopper;
+  RETURN lv_total;
 END;
+/
+SELECT total_purch_sf(idshopper),idshopper FROM bb_basket;
 
 
 
 6-3 Calculating a Shopper’s Total Number of Orders
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: calculate total purchased item quantity according to shopperid
+Condition: (entered idshopper(idshopper == 23))
+From: bb_basket
 
-DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
+CREATE OR REPLACE FUNCTION num_purch_sf
+  (lv_idshopper bb_basket.idshopper%type)
+RETURN NUMBER IS lv_item_total NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO lv_item_total FROM bb_basket WHERE idshopper = lv_idshopper AND orderplaced = 1;
+  RETURN lv_item_total;
 END;
+/
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(num_purch_sf(23));
+END;
+/
 
 
 
