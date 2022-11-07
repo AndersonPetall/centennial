@@ -58,95 +58,77 @@ END;
 
 
 6-4 Identifying the Weekday for an Order Date
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: convert the date to weekday_char according to idbasket
+Condition: ()
+From: bb_basket
 
-DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
+CREATE OR REPLACE FUNCTION day_ord_sf
+  (lv_dtcreated bb_basket.dtcreated%type)
+RETURN VARCHAR2 IS lv_weekday VARCHAR2(20);
+BEGIN
+  lv_weekday := TO_CHAR(lv_dtcreated, 'DAY');
+  RETURN lv_weekday;
 END;
+/
+SELECT idbasket, day_ord_sf(dtcreated) FROM bb_basket;
+SELECT  COUNT(day_ord_sf(dtcreated)),day_ord_sf(dtcreated) FROM bb_basket GROUP BY day_ord_sf(dtcreated);
 
 
 
 6-5 Calculating Days Between Ordering and Shipping
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: output message according to the date and condition
+Condition: (entered idbasket)
+From: bb_basket, bb_basketstatus
 
-DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
+CREATE OR REPLACE FUNCTION ord_ship_sf 
+  (param_id IN bb_basket.idbasket%TYPE) 
+RETURN VARCHAR2 IS 
+  STAGE bb_basketstatus.idstage%TYPE; 
+  ORDER_DATE bb_basket.dtordered%TYPE; 
+  SHIPPED_DATE bb_basketstatus.dtstage%TYPE;
+  message VARCHAR2(20); 
 BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
-END;
+  SELECT MAX(idstage) INTO STAGE FROM bb_basketstatus WHERE idbasket = param_id;   //每个idbasket 在 bb_basketstatus 中存在两个 idstage
+  SELECT dtordered INTO ORDER_DATE FROM bb_basket WHERE idbasket = param_id; 
+  SELECT dtstage INTO SHIPPED_DATE FROM bb_basketstatus WHERE idbasket = param_id AND idstage = STAGE; 
+  IF STAGE != 5 THEN message := 'NOT SHIPPED'; 
+  ELSE 
+    IF SHIPPED_DATE - ORDER_DATE <= 1 THEN message := 'OK'; 
+    ELSE message := 'CHECK'; 
+    END IF; 
+  END IF; 
+  RETURN message; 
+END; 
+/
+BEGIN DBMS_OUTPUT.PUT_LINE(ORD_SHIP_SF(3)); END; 
+/
+BEGIN DBMS_OUTPUT.PUT_LINE(ORD_SHIP_SF(12)); END; 
+/
+BEGIN DBMS_OUTPUT.PUT_LINE(ORD_SHIP_SF(4)); END; 
+/
 
 
 
 6-6 Adding Descriptions for Order Status Codes
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: output message according to the idstage
+Condition: ()
+From: bb_basketstatus
 
-DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
+CREATE OR REPLACE FUNCTION status_desc_sf 
+  (lv_idstage IN bb_basketstatus.idstage%TYPE) 
+RETURN VARCHAR2 IS message VARCHAR2(20); 
 BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
-END;
+  IF lv_idstage = 1 THEN message := 'Order submitted';
+  ELSIF lv_idstage = 2 THEN message := 'Accepted, sent to shipping';
+  ELSIF lv_idstage = 3 THEN message := 'Back-ordered';
+  ELSIF lv_idstage = 4 THEN message := 'Cancelled';
+  ELSIF lv_idstage = 5 THEN message := 'Shipped';
+  END IF; 
+  RETURN message; 
+END; 
+/
+SELECT dtStage, status_desc_sf(idStage) FROM bb_basketstatus WHERE idBasket = 4;
+/
 
 
 
@@ -155,29 +137,18 @@ Require: whether item in stock (comparing the item quantity with the product sto
 Condition: (entered idbasket(idbasket == 6))
 From: BB_BASKETITEM, BB_PRODUCT
 
-DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
-END;
+CREATE OR REPLACE FUNCTION TAX_CALC_SF  
+  (p_bid  NUMBER) RETURN NUMBER IS lv_tax  NUMBER(5,2) := 0; 
+BEGIN     
+  SELECT sb.subtotal*bt.taxrate tax INTO lv_tax FROM bb_basket sb, bb_tax bt WHERE sb.shipstate = bt.state AND sb.idbasket = p_bid;   
+RETURN lv_tax; 
+EXCEPTION     
+  WHEN NO_DATA_FOUND THEN lv_tax := 0;     
+RETURN lv_tax; 
+END TAX_CALC_SF;
+/
+SELECT tax_calc_sf(idbasket) FROM bb_basket   WHERE idbasket = 6;
+/
 
 
 
@@ -186,29 +157,18 @@ Require: whether item in stock (comparing the item quantity with the product sto
 Condition: (entered idbasket(idbasket == 6))
 From: BB_BASKETITEM, BB_PRODUCT
 
-DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
-END;
-
-
-
+CREATE OR REPLACE FUNCTION CK_SALE_SF 
+  (p_proid IN NUMBER,  p_date  IN DATE) 
+RETURN VARCHAR2 AS 
+  lv_start DATE;   
+  lv_end DATE;   
+  lv_str_val VARCHAR2(15); 
+BEGIN     
+  SELECT salestart, saleend INTO lv_start, lv_end FROM bb_product WHERE idproduct = p_proid;
+  IF p_date BETWEEN lv_start AND lv_end THEN
+    lv_str_val := 'On Sale!';   
+  ELSE lv_str_val := 'Great Deal!';   
+  END IF;    
+RETURN lv_str_val; 
+END CK_SALE_SF; 
+/
