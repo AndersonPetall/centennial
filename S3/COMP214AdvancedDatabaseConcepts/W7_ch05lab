@@ -112,9 +112,9 @@ SELECT * FROM bb_basketstatus;
 
 
 5-6 Returning Order Status Information
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: out different respond to different input + exception handling
+Condition: (entered idstatus(idstatus == 6))
+From: bb_basketstatus
 
 //IF statement
 CREATE OR REPLACE PROCEDURE STATUS_SP 
@@ -203,33 +203,24 @@ END;
 
 
 5-8 Adding Items to a Basket
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: insert according to the input
+Condition: (entered value)
+From:bb_basketitem
 
-DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
+CREATE OR REPLACE PROCEDURE basket_add_sp 
+  (lv_idbasket IN bb_basketitem.idbasket%TYPE,
+   lv_idproduct IN bb_basketitem.idproduct%TYPE,
+   lv_price IN bb_basketitem.price%TYPE,
+   lv_quantity IN bb_basketitem.quantity%TYPE,
+   lv_option1 IN bb_basketitem.option1%TYPE,
+   lv_option2 IN bb_basketitem.option2%TYPE)
+IS
+BEGIN
+  INSERT INTO bb_basketitem (idbasketitem,idbasket,idproduct,price,quantity,option1,option2) VALUES(14,lv_idbasket,lv_idproduct,lv_price,lv_quantity,lv_option1,lv_option2);
+  COMMIT;
 END;
+/
+EXECUTE basket_add_sp(14,8,10.80, 1, 2, 4);
 
 
 
