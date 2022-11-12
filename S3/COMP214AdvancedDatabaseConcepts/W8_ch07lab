@@ -1,1 +1,243 @@
-11
+7-1 Creating a Package
+Require: input number, output sentence
+Condition: (entered number)
+From: 
+
+CREATE OR REPLACE FUNCTION dollar_fmt_sf
+  (p_num NUMBER)
+RETURN VARCHAR2 IS lv_amt_txt VARCHAR2(20);
+BEGIN
+  lv_amt_txt := TO_CHAR(p_num,'$99,999.99');
+  RETURN lv_amt_txt;
+END;
+/
+DECLARE
+  lv_amt_num NUMBER(8,2) := 9999.55;
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(dollar_fmt_sf(lv_amt_num));
+END;
+/
+SELECT dollar_fmt_sf(shipping), dollar_fmt_sf(total) FROM bb_basket WHERE idBasket = 3
+
+
+7-2 Using Program Units in a Package
+Require: calculate total purchase according to shopperid
+Condition: ()
+From: bb_basket
+
+CREATE OR REPLACE FUNCTION total_purch_sf
+  (lv_idshopper bb_basket.idshopper%type)
+RETURN bb_basket.total%type IS lv_total bb_basket.total%type;
+BEGIN
+  SELECT SUM(TOTAL) INTO lv_total FROM bb_basket WHERE idshopper = lv_idshopper;
+  RETURN lv_total;
+END;
+/
+SELECT total_purch_sf(idshopper),idshopper FROM bb_basket;
+
+
+
+7-3 Creating a Package with Private Program Units
+Require: calculate total purchased item quantity according to shopperid
+Condition: (entered idshopper(idshopper == 23))
+From: bb_basket
+
+CREATE OR REPLACE FUNCTION num_purch_sf
+  (lv_idshopper bb_basket.idshopper%type)
+RETURN NUMBER IS lv_item_total NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO lv_item_total FROM bb_basket WHERE idshopper = lv_idshopper AND orderplaced = 1;
+  RETURN lv_item_total;
+END;
+/
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(num_purch_sf(23));
+END;
+/
+
+
+
+7-4 Using Packaged Variables
+Require: convert the date to weekday_char according to idbasket
+Condition: ()
+From: bb_basket
+
+CREATE OR REPLACE FUNCTION day_ord_sf
+  (lv_dtcreated bb_basket.dtcreated%type)
+RETURN VARCHAR2 IS lv_weekday VARCHAR2(20);
+BEGIN
+  lv_weekday := TO_CHAR(lv_dtcreated, 'DAY');
+  RETURN lv_weekday;
+END;
+/
+SELECT idbasket, day_ord_sf(dtcreated) FROM bb_basket;
+SELECT  COUNT(day_ord_sf(dtcreated)),day_ord_sf(dtcreated) FROM bb_basket GROUP BY day_ord_sf(dtcreated);
+
+
+
+7-5 Overloading Packaged Procedures
+Require: output message according to the date and condition
+Condition: (entered idbasket)
+From: bb_basket, bb_basketstatus
+
+CREATE OR REPLACE FUNCTION ord_ship_sf 
+  (param_id IN bb_basket.idbasket%TYPE) 
+RETURN VARCHAR2 IS 
+  STAGE bb_basketstatus.idstage%TYPE; 
+  ORDER_DATE bb_basket.dtordered%TYPE; 
+  SHIPPED_DATE bb_basketstatus.dtstage%TYPE;
+  message VARCHAR2(20); 
+BEGIN 
+  SELECT MAX(idstage) INTO STAGE FROM bb_basketstatus WHERE idbasket = param_id;   //每个idbasket 在 bb_basketstatus 中存在两个 idstage
+  SELECT dtordered INTO ORDER_DATE FROM bb_basket WHERE idbasket = param_id; 
+  SELECT dtstage INTO SHIPPED_DATE FROM bb_basketstatus WHERE idbasket = param_id AND idstage = STAGE; 
+  IF STAGE != 5 THEN message := 'NOT SHIPPED'; 
+  ELSE 
+    IF SHIPPED_DATE - ORDER_DATE <= 1 THEN message := 'OK'; 
+    ELSE message := 'CHECK'; 
+    END IF; 
+  END IF; 
+  RETURN message; 
+END; 
+/
+BEGIN DBMS_OUTPUT.PUT_LINE(ORD_SHIP_SF(3)); END; 
+/
+BEGIN DBMS_OUTPUT.PUT_LINE(ORD_SHIP_SF(12)); END; 
+/
+BEGIN DBMS_OUTPUT.PUT_LINE(ORD_SHIP_SF(4)); END; 
+/
+
+
+
+7-6 Creating a Package with Only a Specification
+Require: output message according to the idstage
+Condition: ()
+From: bb_basketstatus
+
+CREATE OR REPLACE FUNCTION status_desc_sf 
+  (lv_idstage IN bb_basketstatus.idstage%TYPE) 
+RETURN VARCHAR2 IS message VARCHAR2(20); 
+BEGIN 
+  IF lv_idstage = 1 THEN message := 'Order submitted';
+  ELSIF lv_idstage = 2 THEN message := 'Accepted, sent to shipping';
+  ELSIF lv_idstage = 3 THEN message := 'Back-ordered';
+  ELSIF lv_idstage = 4 THEN message := 'Cancelled';
+  ELSIF lv_idstage = 5 THEN message := 'Shipped';
+  END IF; 
+  RETURN message; 
+END; 
+/
+SELECT dtStage, status_desc_sf(idStage) FROM bb_basketstatus WHERE idBasket = 4;
+/
+
+
+
+7-7 Using a Cursor in a Package
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+CREATE OR REPLACE FUNCTION TAX_CALC_SF  
+  (p_bid  NUMBER) RETURN NUMBER IS lv_tax  NUMBER(5,2) := 0; 
+BEGIN     
+  SELECT sb.subtotal*bt.taxrate tax INTO lv_tax FROM bb_basket sb, bb_tax bt WHERE sb.shipstate = bt.state AND sb.idbasket = p_bid;   
+RETURN lv_tax; 
+EXCEPTION     
+  WHEN NO_DATA_FOUND THEN lv_tax := 0;     
+RETURN lv_tax; 
+END TAX_CALC_SF;
+/
+SELECT tax_calc_sf(idbasket) FROM bb_basket   WHERE idbasket = 6;
+/
+
+
+
+7-8 Using a One-Time-Only Procedure in a Package
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+CREATE OR REPLACE FUNCTION CK_SALE_SF 
+  (p_proid IN NUMBER,  p_date  IN DATE) 
+RETURN VARCHAR2 AS 
+  lv_start DATE;   
+  lv_end DATE;   
+  lv_str_val VARCHAR2(15); 
+BEGIN     
+  SELECT salestart, saleend INTO lv_start, lv_end FROM bb_product WHERE idproduct = p_proid;
+  IF p_date BETWEEN lv_start AND lv_end THEN
+    lv_str_val := 'On Sale!';   
+  ELSE lv_str_val := 'Great Deal!';   
+  END IF;    
+RETURN lv_str_val; 
+END CK_SALE_SF; 
+/
+
+
+
+7-9 Creating a Package for Pledges
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+CREATE OR REPLACE FUNCTION CK_SALE_SF 
+  (p_proid IN NUMBER,  p_date  IN DATE) 
+RETURN VARCHAR2 AS 
+  lv_start DATE;   
+  lv_end DATE;   
+  lv_str_val VARCHAR2(15); 
+BEGIN     
+  SELECT salestart, saleend INTO lv_start, lv_end FROM bb_product WHERE idproduct = p_proid;
+  IF p_date BETWEEN lv_start AND lv_end THEN
+    lv_str_val := 'On Sale!';   
+  ELSE lv_str_val := 'Great Deal!';   
+  END IF;    
+RETURN lv_str_val; 
+END CK_SALE_SF; 
+/
+
+
+
+7-10 Adding a Pledge Display Procedure to the Package
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+CREATE OR REPLACE FUNCTION CK_SALE_SF 
+  (p_proid IN NUMBER,  p_date  IN DATE) 
+RETURN VARCHAR2 AS 
+  lv_start DATE;   
+  lv_end DATE;   
+  lv_str_val VARCHAR2(15); 
+BEGIN     
+  SELECT salestart, saleend INTO lv_start, lv_end FROM bb_product WHERE idproduct = p_proid;
+  IF p_date BETWEEN lv_start AND lv_end THEN
+    lv_str_val := 'On Sale!';   
+  ELSE lv_str_val := 'Great Deal!';   
+  END IF;    
+RETURN lv_str_val; 
+END CK_SALE_SF; 
+/
+
+
+
+7-11 Adding a Payment Retrieval Procedure to the Package
+Require: whether item in stock (comparing the item quantity with the product stock amount)
+Condition: (entered idbasket(idbasket == 6))
+From: BB_BASKETITEM, BB_PRODUCT
+
+CREATE OR REPLACE FUNCTION CK_SALE_SF 
+  (p_proid IN NUMBER,  p_date  IN DATE) 
+RETURN VARCHAR2 AS 
+  lv_start DATE;   
+  lv_end DATE;   
+  lv_str_val VARCHAR2(15); 
+BEGIN     
+  SELECT salestart, saleend INTO lv_start, lv_end FROM bb_product WHERE idproduct = p_proid;
+  IF p_date BETWEEN lv_start AND lv_end THEN
+    lv_str_val := 'On Sale!';   
+  ELSE lv_str_val := 'Great Deal!';   
+  END IF;    
+RETURN lv_str_val; 
+END CK_SALE_SF; 
+/
