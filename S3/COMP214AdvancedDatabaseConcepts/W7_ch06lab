@@ -133,9 +133,9 @@ SELECT dtStage, status_desc_sf(idStage) FROM bb_basketstatus WHERE idBasket = 4;
 
 
 6-7 Calculating an Order’s Tax Amount
-Require: whether item in stock (comparing the item quantity with the product stock amount)
+Require: calculate tax = taxrate*subtotal from two table
 Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+From: bb_basket, bb_tax
 
 CREATE OR REPLACE FUNCTION TAX_CALC_SF  
   (p_bid  NUMBER) RETURN NUMBER IS lv_tax  NUMBER(5,2) := 0; 
@@ -147,15 +147,15 @@ EXCEPTION
 RETURN lv_tax; 
 END TAX_CALC_SF;
 /
-SELECT tax_calc_sf(idbasket) FROM bb_basket   WHERE idbasket = 6;
+SELECT tax_calc_sf(idbasket) FROM bb_basket WHERE idbasket = 6;
 /
 
 
 
 6-8 Identifying Sale Products
-Require: whether item in stock (comparing the item quantity with the product stock amount)
+Require: whether good's input date between startDate and endDate
 Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+From: bb_product
 
 CREATE OR REPLACE FUNCTION CK_SALE_SF 
   (p_proid IN NUMBER,  p_date  IN DATE) 
