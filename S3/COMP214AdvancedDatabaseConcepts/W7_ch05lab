@@ -172,33 +172,35 @@ END;
 
 
 5-7 Identifying Customers
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: insert row into one table according to the condition from another table
+Condition: (input date)
+From: bb_basket TO: bb_promolist
+key: cursor
 
-DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
-  END IF;
-END;
+CREATE OR REPLACE PROCEDURE promo_ship_sp
+ (p_date in date)
+is
+ CURSOR cur_promo is 
+ SELECT idshopper, max(dtcreated) createdate FROM bb_basket GROUP BY idshopper HAVING MAX(dtcreated) < p_date;
+ type t_rec is record
+       (shopperid bb_basket.idshopper%type,
+        createdate bb_basket.dtcreated%type);
+ rec_promo t_rec;
+ v_month char(3) := 'APR';
+ v_year number(4,0) := 2012;
+ v_promoflag number(1,0) := 1;
+ v_used char(1) := 'N';
+BEGIN
+ OPEN cur_promo;
+ LOOP
+   FETCH cur_promo INTO rec_promo;
+   EXIT WHEN cur_promo%notfound;
+     INSERT INTO bb_promolist VALUES (rec_promo.shopperid, v_month,v_year,v_promoflag,v_used);
+    END LOOP;
+ CLOSE cur_promo;
+END PROMO_SHIP_SP;
+/
+EXECUTE  promo_ship_sp(TO_DATE('15-FEB-2012','DD-MM-YYYY'));
 
 
 
@@ -225,35 +227,39 @@ EXECUTE basket_add_sp(14,8,10.80, 1, 2, 4);
 
 
 5-9 Creating a Logon Procedure
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: output the fullname and cookie according to the id and password
+Condition: (entered id and password)
+From: bb_shopper
 
+CREATE OR REPLACE PROCEDURE member_ck_sp   
+ (lv_idshopper IN bb_shopper.idshopper%type,    
+  lv_password IN bb_shopper.password%type,    
+  fullname OUT bb_shopper.firstname%type,
+  lv_cookie OUT bb_shopper.cookie%type,
+  flag OUT Boolean)  
+IS  
+  CURSOR cur1 IS SELECT idshopper,firstname,lastname, cookie, password FROM bb_shopper WHERE idshopper = lv_idshopper AND password = lv_password;
+BEGIN     
+  flag := false;
+ FOR rec_cur IN cur1 LOOP                   
+  fullname := rec_cur.firstname || ' ' || rec_cur.lastname;          
+  lv_cookie := rec_cur.cookie;
+  flag := true;
+ END LOOP; 
+EXCEPTION
+  WHEN others THEN DBMS_OUTPUT.PUT_LINE('error');
+END member_ck_sp;
+/
 DECLARE
-  CURSOR onecursor IS 
-    SELECT idbasket, quantity, stock FROM bb_basketitem 
-    JOIN bb_product USING(idproduct) WHERE idbasket = 6;
-  TYPE typebas IS RECORD(
-    id bb_basketitem.idbasket%type,
-    quantity bb_basketitem.quantity%type,
-    stock bb_product.stock%type
-  );
-  onebas typebas;
-  flag char(1) := 'Y';
-BEGIN 
-  OPEN onecursor;
-  LOOP
-    FETCH onecursor INTO onebas;
-      EXIT WHEN onecursor%NOTFOUND;
-      IF onebas.stock < onebas.quantity THEN flag := 'N'; END IF;
-  END LOOP;
-  CLOSE onecursor;
-  IF flag = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!');
-   ELSE DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); 
+  id bb_shopper.idshopper%type := 211;    
+  password bb_shopper.password%type := 'flyby';   
+  fullname bb_shopper.firstname%type;
+  cookie bb_shopper.cookie%type;
+  flag Boolean;
+BEGIN
+  member_ck_sp(id,password,fullname,cookie,flag);
+  IF flag THEN DBMS_OUTPUT.PUT_LINE(fullname||' '||cookie);
+  ELSE DBMS_OUTPUT.PUT_LINE('error');
   END IF;
 END;
-
-
-
-
-
+/
