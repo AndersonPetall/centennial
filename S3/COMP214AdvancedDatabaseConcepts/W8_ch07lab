@@ -147,119 +147,210 @@ end;
 
 
 7-4 Using Packaged Variables
-Require: convert the date to weekday_char according to idbasket
-Condition: ()
-From: bb_basket
+Require: specify a variable in the PACKAGE declare
+Condition: (enter passwd)
+From: bb_shopper
 
-CREATE OR REPLACE FUNCTION day_ord_sf
-  (lv_dtcreated bb_basket.dtcreated%type)
-RETURN VARCHAR2 IS lv_weekday VARCHAR2(20);
-BEGIN
-  lv_weekday := TO_CHAR(lv_dtcreated, 'DAY');
-  RETURN lv_weekday;
+-- create the function
+CREATE OR REPLACE FUNCTION verify_user
+  (usernm in varchar2,passwd in varchar2)
+RETURN char IS
+   temp_user bb_shopper.username%type;confirm char(1) := 'N';
+begin
+  select username into temp_user from bb_shopper where password = passwd;
+  confirm := 'Y';
+  return confirm;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('logon values are invalid'); RETURN confirm;
 END;
 /
-SELECT idbasket, day_ord_sf(dtcreated) FROM bb_basket;
-SELECT  COUNT(day_ord_sf(dtcreated)),day_ord_sf(dtcreated) FROM bb_basket GROUP BY day_ord_sf(dtcreated);
-
+-- test function
+CALL DBMS_OUTPUT.PUT_LINE(verify_user('gma1', 'goofy'));
+CALL DBMS_OUTPUT.PUT_LINE(verify_user('gma2', 'goofy111'));
+/
+-- make it a package this time
+CREATE OR REPLACE PACKAGE login_pckg IS
+  message CHAR;
+  FUNCTION verify_user (usernm in varchar2, passwd in varchar2) RETURN char;
+end;
+/
+-- body of the package
+CREATE OR REPLACE PACKAGE BODY login_pckg IS
+  FUNCTION verify_user
+    (usernm in varchar2,passwd in varchar2)
+  RETURN char IS
+    temp_user bb_shopper.username%type;
+    message char(1) := 'N';
+  begin
+    select username into temp_user from bb_shopper where password = passwd;
+    message := 'Y';
+    RETURN message;
+  EXCEPTION
+  WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('logon values are invalid');RETURN message; 
+  END verify_user;
+END;
+/
+-- test
+begin
+  dbms_output.put_line(login_pckg.verify_user('gma1', 'goofy'));
+end;
+/   
 
 
 7-5 Overloading Packaged Procedures
-Require: output message according to the date and condition
-Condition: (entered idbasket)
-From: bb_basket, bb_basketstatus
+Require: overload
+Condition: (entered idshopper/lastname)
+From: idshopper
 
-CREATE OR REPLACE FUNCTION ord_ship_sf 
-  (param_id IN bb_basket.idbasket%TYPE) 
-RETURN VARCHAR2 IS 
-  STAGE bb_basketstatus.idstage%TYPE; 
-  ORDER_DATE bb_basket.dtordered%TYPE; 
-  SHIPPED_DATE bb_basketstatus.dtstage%TYPE;
-  message VARCHAR2(20); 
-BEGIN 
-  SELECT MAX(idstage) INTO STAGE FROM bb_basketstatus WHERE idbasket = param_id;   //每个idbasket 在 bb_basketstatus 中存在两个 idstage
-  SELECT dtordered INTO ORDER_DATE FROM bb_basket WHERE idbasket = param_id; 
-  SELECT dtstage INTO SHIPPED_DATE FROM bb_basketstatus WHERE idbasket = param_id AND idstage = STAGE; 
-  IF STAGE != 5 THEN message := 'NOT SHIPPED'; 
-  ELSE 
-    IF SHIPPED_DATE - ORDER_DATE <= 1 THEN message := 'OK'; 
-    ELSE message := 'CHECK'; 
-    END IF; 
-  END IF; 
-  RETURN message; 
-END; 
+CREATE OR REPLACE PACKAGE shop_query_pkg is
+  PROCEDURE retrieve_shopper-- first overloaded procedure, takes id
+    (lv_id in bb_shopper.idshopper%type,
+     lv_name out varchar,
+     lv_city out bb_shopper.city%type,
+     lv_state out bb_shopper.state%type,
+     lv_phone out bb_shopper.phone%type);
+  procedure retrieve_shopper-- second overloaded procedure, takes last name  
+    (lv_last in bb_shopper.lastname%type,
+     lv_name out varchar,
+     lv_city out bb_shopper.city%type,
+     lv_state out bb_shopper.state%type,
+     lv_phone out bb_shopper.phone%type);
+END;
 /
-BEGIN DBMS_OUTPUT.PUT_LINE(ORD_SHIP_SF(3)); END; 
+CREATE OR REPLACE PACKAGE BODY shop_query_pkg is
+  
+  PROCEDURE retrieve_shopper-- first overloaded procedure, takes id
+    (lv_id in bb_shopper.idshopper%type,
+     lv_name out varchar,
+     lv_city out bb_shopper.city%type,
+     lv_state out bb_shopper.state%type,
+     lv_phone out bb_shopper.phone%type)
+  IS
+  BEGIN
+    select firstname||' '||lastname, city, state, phone into lv_name, lv_city, lv_state, lv_phone from bb_shopper where idshopper = lv_id;
+  END retrieve_shopper;
+  PROCEDURE retrieve_shopper-- second overloaded procedure, takes last name  
+    (lv_last in bb_shopper.lastname%type,
+     lv_name out varchar,
+     lv_city out bb_shopper.city%type,
+     lv_state out bb_shopper.state%type,
+     lv_phone out bb_shopper.phone%type)
+  IS
+  BEGIN
+    select firstname||' '||lastname, city, state, phone into lv_name, lv_city, lv_state, lv_phone from bb_shopper where lastname = lv_last;
+  END retrieve_shopper;
+END;
 /
-BEGIN DBMS_OUTPUT.PUT_LINE(ORD_SHIP_SF(12)); END; 
-/
-BEGIN DBMS_OUTPUT.PUT_LINE(ORD_SHIP_SF(4)); END; 
+-- test 
+declare
+  lv_id number := 23;
+  lv_last bb_shopper.lastname%type := 'Ratman';
+  lv_name varchar2(25);
+  lv_city  bb_shopper.city%type;
+  lv_state bb_shopper.state%type;
+  lv_phone bb_shopper.phone%type;
+begin
+  -- test procedure w/ id
+  shop_query_pkg.retrieve_shopper(lv_id, lv_name,lv_city, lv_state, lv_phone);
+  dbms_output.put_line(lv_name||' '||lv_city ||' '||lv_state||' '||lv_phone);
+  -- test procedure w/ last name
+  shop_query_pkg.retrieve_shopper(lv_last, lv_name,lv_city, lv_state, lv_phone);
+  dbms_output.put_line(lv_name||' '||lv_city||' '||lv_state||' '||lv_phone);
+end;
 /
 
 
 
 7-6 Creating a Package with Only a Specification
-Require: output message according to the idstage
+Require: call the variable in the package specification (varialbes are all constant)
 Condition: ()
-From: bb_basketstatus
+From: 
 
-CREATE OR REPLACE FUNCTION status_desc_sf 
-  (lv_idstage IN bb_basketstatus.idstage%TYPE) 
-RETURN VARCHAR2 IS message VARCHAR2(20); 
-BEGIN 
-  IF lv_idstage = 1 THEN message := 'Order submitted';
-  ELSIF lv_idstage = 2 THEN message := 'Accepted, sent to shipping';
-  ELSIF lv_idstage = 3 THEN message := 'Back-ordered';
-  ELSIF lv_idstage = 4 THEN message := 'Cancelled';
-  ELSIF lv_idstage = 5 THEN message := 'Shipped';
-  END IF; 
-  RETURN message; 
-END; 
+-- create a reference package w/ no body
+CREATE OR REPLACE PACKAGE tax_rate_pkg is
+  pv_tax_nc constant number := .035; -- all variables are constants
+  pv_tax_tx constant number := .05;
+  pv_tax_tn constant number := .02;
+END;
 /
-SELECT dtStage, status_desc_sf(idStage) FROM bb_basketstatus WHERE idBasket = 4;
-/
+-- test our body-less package by printing the variables
+CALL dbms_output.put_line(tax_rate_pkg.pv_tax_nc);
+CALL dbms_output.put_line(tax_rate_pkg.pv_tax_tx);
+CALL dbms_output.put_line(tax_rate_pkg.pv_tax_tn);
 
 
 
 7-7 Using a Cursor in a Package
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: use cursor in package to find rate according to the entered state
+Condition: (entered state)
+From: bb_tax
 
-CREATE OR REPLACE FUNCTION TAX_CALC_SF  
-  (p_bid  NUMBER) RETURN NUMBER IS lv_tax  NUMBER(5,2) := 0; 
-BEGIN     
-  SELECT sb.subtotal*bt.taxrate tax INTO lv_tax FROM bb_basket sb, bb_tax bt WHERE sb.shipstate = bt.state AND sb.idbasket = p_bid;   
-RETURN lv_tax; 
-EXCEPTION     
-  WHEN NO_DATA_FOUND THEN lv_tax := 0;     
-RETURN lv_tax; 
-END TAX_CALC_SF;
+-- create a tax package
+CREATE OR REPLACE PACKAGE tax_rate_pkg is
+  -- spec a cursor to hold state and tax rate
+  CURSOR cur_tax is select taxrate, state from bb_tax;
+  -- spec a functionto get tax rate 
+  FUNCTION get_tax (pv_state in bb_tax.state%type) RETURN bb_tax.taxrate%type;
+END;
 /
-SELECT tax_calc_sf(idbasket) FROM bb_basket   WHERE idbasket = 6;
+-- create a tax package body
+CREATE OR REPLACE PACKAGE BODY tax_rate_pkg is
+  -- define our function
+  FUNCTION get_tax (pv_state in bb_tax.state%type)
+  RETURN bb_tax.taxrate%type IS pv_tax bb_tax.taxrate%type := 0.00;
+  BEGIN -- use cursor for loop to find state and rate
+    FOR rec_tax IN cur_tax LOOP
+        IF rec_tax.state = pv_state THEN pv_tax := rec_tax.taxrate;
+        END IF;
+    END LOOP;
+    RETURN pv_tax;
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('STATE values are invalid');RETURN pv_tax; 
+  END get_tax;
+END;
 /
+-- test our package with NC
+CALL DBMS_OUTPUT.PUT_LINE('NC'||' '||tax_rate_pkg.get_tax('NC'));
+CALL DBMS_OUTPUT.PUT_LINE('NCC'||' '||tax_rate_pkg.get_tax('NCC'));
 
 
 
 7-8 Using a One-Time-Only Procedure in a Package
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: calculate the timestamp if the result is found (username and password)
+Condition: (entered username and password)
+From: bb_shopper
 
-CREATE OR REPLACE FUNCTION CK_SALE_SF 
-  (p_proid IN NUMBER,  p_date  IN DATE) 
-RETURN VARCHAR2 AS 
-  lv_start DATE;   
-  lv_end DATE;   
-  lv_str_val VARCHAR2(15); 
-BEGIN     
-  SELECT salestart, saleend INTO lv_start, lv_end FROM bb_product WHERE idproduct = p_proid;
-  IF p_date BETWEEN lv_start AND lv_end THEN
-    lv_str_val := 'On Sale!';   
-  ELSE lv_str_val := 'Great Deal!';   
-  END IF;    
-RETURN lv_str_val; 
-END CK_SALE_SF; 
+CREATE OR REPLACE PACKAGE login_pkg IS
+ pv_login_time timestamp; 
+ pv_id_num NUMBER(3);
+ FUNCTION login_ck_pf 
+  (p_user IN VARCHAR2,
+   p_pass IN VARCHAR2)
+   RETURN CHAR;
+END;
+/  
+CREATE OR REPLACE PACKAGE BODY login_pkg IS
+  FUNCTION login_ck_pf 
+  (p_user IN VARCHAR2,
+   p_pass IN VARCHAR2)
+  RETURN CHAR IS
+   lv_ck_txt CHAR(1) := 'N';
+   lv_id_num NUMBER(5);
+  BEGIN
+   SELECT idShopper INTO lv_id_num FROM bb_shopper WHERE username = p_user AND password = p_pass;
+   lv_ck_txt := 'Y';
+   pv_id_num := lv_id_num;
+  RETURN lv_ck_txt;
+  EXCEPTION
+   WHEN NO_DATA_FOUND THEN RETURN lv_ck_txt;
+  END login_ck_pf;
+  -- get the timestamp when login is called 
+  begin
+    select systimestamp into pv_login_time from dual;
+END;
+/
+-- anonymous block for testing
+call DBMS_OUTPUT.PUT_LINE(login_pkg.login_ck_pf('Crackj', 'flyby')||'   '||login_pkg.pv_login_time);
 /
 
 
@@ -269,22 +360,35 @@ Require: whether item in stock (comparing the item quantity with the product sto
 Condition: (entered idbasket(idbasket == 6))
 From: BB_BASKETITEM, BB_PRODUCT
 
-CREATE OR REPLACE FUNCTION CK_SALE_SF 
-  (p_proid IN NUMBER,  p_date  IN DATE) 
-RETURN VARCHAR2 AS 
-  lv_start DATE;   
-  lv_end DATE;   
-  lv_str_val VARCHAR2(15); 
-BEGIN     
-  SELECT salestart, saleend INTO lv_start, lv_end FROM bb_product WHERE idproduct = p_proid;
-  IF p_date BETWEEN lv_start AND lv_end THEN
-    lv_str_val := 'On Sale!';   
-  ELSE lv_str_val := 'Great Deal!';   
-  END IF;    
-RETURN lv_str_val; 
-END CK_SALE_SF; 
+CREATE OR REPLACE PACKAGE pledge_pkg IS
+ FUNCTION  dd_paydate1_pf (p_id IN dd_payment.idpledge%type) RETURN DATE;
+ FUNCTION  dd_payend_pf (p_id IN dd_payment.idpledge%type) RETURN DATE;
+END;
+/  
+CREATE OR REPLACE PACKAGE BODY pledge_pkg IS
+  FUNCTION  dd_paydate1_pf (p_id IN dd_payment.idpledge%type)  RETURN DATE IS first_date DATE;
+  BEGIN
+   SELECT min(paydate) INTO first_date FROM dd_payment WHERE idpledge = p_id;
+   first_date := next_day(last_day(min(first_date)));
+  RETURN first_date;
+  EXCEPTION
+   WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('no date found');
+  END;
+  FUNCTION  dd_payend_pf (p_id IN dd_payment.idpledge%type)  RETURN DATE IS last_date DATE;
+  BEGIN
+   SELECT max(paydate) INTO last_date FROM dd_payment WHERE idpledge = p_id;
+   last_date := last_day(max(last_date));
+  RETURN last_date;
+  EXCEPTION
+   WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('no date found');
+  END;
+END;
 /
-
+-- anonymous block for testing
+call dbms_output.put_line(login_pkg.login_ck_pf('Crackj', 'flyby11')||'   '||login_pkg.pv_login_time);
+/
+SELECT min(paydate) FROM dd_payment WHERE idpledge = 104;
+SELECT max(paydate) FROM dd_payment WHERE idpledge = 104;
 
 
 7-10 Adding a Pledge Display Procedure to the Package
