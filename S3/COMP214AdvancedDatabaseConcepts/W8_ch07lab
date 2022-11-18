@@ -1,60 +1,149 @@
 7-1 Creating a Package
-Require: input number, output sentence
-Condition: (entered number)
-From: 
+Require: input iDbasket, output fullname(function), shipNumber and date(procedure)
+Condition: (entered iDbasket)
+From: bb_basket
 
-CREATE OR REPLACE FUNCTION dollar_fmt_sf
-  (p_num NUMBER)
-RETURN VARCHAR2 IS lv_amt_txt VARCHAR2(20);
-BEGIN
-  lv_amt_txt := TO_CHAR(p_num,'$99,999.99');
-  RETURN lv_amt_txt;
+CREATE OR REPLACE PACKAGE order_info_pkg IS
+ FUNCTION ship_name_pf  
+   (p_basket IN NUMBER)
+   RETURN VARCHAR2;
+ PROCEDURE basket_info_pp
+  (p_basket IN NUMBER,
+   p_shop OUT NUMBER,
+   p_date OUT DATE);
 END;
 /
-DECLARE
-  lv_amt_num NUMBER(8,2) := 9999.55;
-BEGIN
-  DBMS_OUTPUT.PUT_LINE(dollar_fmt_sf(lv_amt_num));
+CREATE OR REPLACE PACKAGE BODY order_info_pkg IS
+ FUNCTION ship_name_pf  
+   (p_basket IN NUMBER)
+ RETURN VARCHAR2 IS lv_name_txt VARCHAR2(25);
+ BEGIN
+  SELECT shipfirstname||' '||shiplastname INTO lv_name_txt FROM bb_basket WHERE idBasket = p_basket;
+  RETURN lv_name_txt;
+ EXCEPTION
+   WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('Invalid basket id');
+ END ship_name_pf;
+ PROCEDURE basket_info_pp
+  (p_basket IN NUMBER,
+   p_shop OUT NUMBER,
+   p_date OUT DATE)
+ IS
+ BEGIN
+   SELECT idshopper, dtordered INTO p_shop, p_date FROM bb_basket WHERE idbasket = p_basket;
+ EXCEPTION
+   WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('Invalid basket id');
+ END basket_info_pp;
 END;
 /
-SELECT dollar_fmt_sf(shipping), dollar_fmt_sf(total) FROM bb_basket WHERE idBasket = 3
 
 
 7-2 Using Program Units in a Package
-Require: calculate total purchase according to shopperid
-Condition: ()
+Require: test the 7-1 Package (declare and select two condition)
+Condition: (entered iDbasket)
 From: bb_basket
 
-CREATE OR REPLACE FUNCTION total_purch_sf
-  (lv_idshopper bb_basket.idshopper%type)
-RETURN bb_basket.total%type IS lv_total bb_basket.total%type;
-BEGIN
-  SELECT SUM(TOTAL) INTO lv_total FROM bb_basket WHERE idshopper = lv_idshopper;
-  RETURN lv_total;
+CREATE OR REPLACE PACKAGE order_info_pkg IS
+ FUNCTION ship_name_pf  
+   (p_basket IN NUMBER)
+   RETURN VARCHAR2;
+ PROCEDURE basket_info_pp
+  (p_basket IN NUMBER,
+   p_shop OUT NUMBER,
+   p_date OUT DATE);
 END;
 /
-SELECT total_purch_sf(idshopper),idshopper FROM bb_basket;
+CREATE OR REPLACE PACKAGE BODY order_info_pkg IS
+ FUNCTION ship_name_pf  
+   (p_basket IN NUMBER)
+ RETURN VARCHAR2 IS lv_name_txt VARCHAR2(25);
+ BEGIN
+  SELECT shipfirstname||' '||shiplastname INTO lv_name_txt FROM bb_basket WHERE idBasket = p_basket;
+  RETURN lv_name_txt;
+ EXCEPTION
+   WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('Invalid basket id');
+ END ship_name_pf;
+ PROCEDURE basket_info_pp
+  (p_basket IN NUMBER,
+   p_shop OUT NUMBER,
+   p_date OUT DATE)
+ IS
+ BEGIN
+   SELECT idshopper, dtordered INTO p_shop, p_date FROM bb_basket WHERE idbasket = p_basket;
+ EXCEPTION
+   WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('Invalid basket id');
+ END basket_info_pp;
+END;
+/
+-- test procedure and function in block (returns nulls)
+declare
+  lv_id number := 12;
+  lv_name varchar2(25);
+  lv_shopper bb_basket.idshopper%type;
+  lv_date bb_basket.dtcreated%type;
+begin
+-- test function
+dbms_output.put_line(lv_id||' '||order_info_pkg.ship_name_pf(lv_id));
+-- test procedure
+order_info_pkg.basket_info_pp(lv_id, lv_shopper, lv_date);
+dbms_output.put_line(lv_id||' '||lv_shopper||' '||lv_date);
+end;
+/
+-- test with select - again, prints nothing
+select (order_info_pkg.ship_name_pf(idbasket))"ship_name_pf on 12" from bb_basket where idbasket = 12;
+/
+
 
 
 
 7-3 Creating a Package with Private Program Units
-Require: calculate total purchased item quantity according to shopperid
-Condition: (entered idshopper(idshopper == 23))
+Require: make the 7-1 Package's function private 
+Condition: (entered iDbasket)
 From: bb_basket
 
-CREATE OR REPLACE FUNCTION num_purch_sf
-  (lv_idshopper bb_basket.idshopper%type)
-RETURN NUMBER IS lv_item_total NUMBER;
-BEGIN
-  SELECT COUNT(*) INTO lv_item_total FROM bb_basket WHERE idshopper = lv_idshopper AND orderplaced = 1;
-  RETURN lv_item_total;
+CREATE OR REPLACE PACKAGE order_info_pkg IS
+ PROCEDURE basket_info_pp
+  (p_basket IN NUMBER,
+   p_shop OUT NUMBER,
+   p_date OUT DATE,
+   p_name OUT VARCHAR2);
 END;
 /
-BEGIN
-  DBMS_OUTPUT.PUT_LINE(num_purch_sf(23));
+CREATE OR REPLACE PACKAGE BODY order_info_pkg IS
+ FUNCTION ship_name_pf  
+   (p_basket IN NUMBER)
+   RETURN VARCHAR2
+ IS lv_name_txt VARCHAR2(25);
+ BEGIN
+  SELECT shipfirstname||' '||shiplastname INTO lv_name_txt FROM bb_basket WHERE idBasket = p_basket;
+  RETURN lv_name_txt;
+ EXCEPTION
+   WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('Invalid basket id');
+ END ship_name_pf;
+ PROCEDURE basket_info_pp
+  (p_basket IN NUMBER,
+   p_shop OUT NUMBER,
+   p_date OUT DATE,
+   p_name OUT VARCHAR2)
+ IS
+ BEGIN
+   SELECT idshopper, dtordered INTO p_shop, p_date FROM bb_basket WHERE idbasket = p_basket;
+   p_name := ship_name_pf(p_basket);
+ EXCEPTION
+   WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('Invalid basket id');
+ END basket_info_pp;
 END;
 /
-
+-- test procedure  with id = 6
+declare
+  lv_id number := 6;
+  lv_name varchar2(25);
+  lv_shopper bb_basket.idshopper%type;
+  lv_date bb_basket.dtcreated%type;
+begin
+  order_info_pkg.basket_info_pp(lv_id, lv_shopper, lv_date, lv_name);
+  dbms_output.put_line(lv_id||' '||lv_shopper||' '||lv_date||' '||lv_name);
+end;
+/
 
 
 7-4 Using Packaged Variables
