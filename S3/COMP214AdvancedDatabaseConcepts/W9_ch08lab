@@ -1,1 +1,237 @@
+8-1 Creating a Procedure
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
 
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+
+8-2 Creating a Procedure
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+
+8-3 Creating a Procedure
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+
+8-4 Creating a Procedure
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+
+8-5 Creating a Procedure
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+
+8-6 Creating a Procedure
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+
+8-7 Creating a Procedure
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+
+8-8 Creating a Procedure
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+
+8-9 Creating a Procedure
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+
+8-10 Creating a Procedure
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
