@@ -356,9 +356,10 @@ call DBMS_OUTPUT.PUT_LINE(login_pkg.login_ck_pf('Crackj', 'flyby')||'   '||login
 
 
 7-9 Creating a Package for Pledges
-Require: whether item in stock (comparing the item quantity with the product stock amount)
-Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+Require: output date according to the idpledge
+Condition: (entered idpledge(idpledge == 104))
+From: dd_payment
+key:怎么获取date当前月份的第一日和最后一日  -->  trunc(date,'mm')  last_day(date)
 
 CREATE OR REPLACE PACKAGE pledge_pkg IS
  FUNCTION  dd_paydate1_pf (p_id IN dd_payment.idpledge%type) RETURN DATE;
@@ -366,18 +367,16 @@ CREATE OR REPLACE PACKAGE pledge_pkg IS
 END;
 /  
 CREATE OR REPLACE PACKAGE BODY pledge_pkg IS
-  FUNCTION  dd_paydate1_pf (p_id IN dd_payment.idpledge%type)  RETURN DATE IS first_date DATE;
+  FUNCTION dd_paydate1_pf (p_id IN dd_payment.idpledge%type)  RETURN DATE IS first_date DATE;
   BEGIN
-   SELECT min(paydate) INTO first_date FROM dd_payment WHERE idpledge = p_id;
-   first_date := next_day(last_day(min(first_date)));
+   SELECT trunc(min(paydate),'mm') INTO first_date FROM dd_payment WHERE idpledge = p_id;
   RETURN first_date;
   EXCEPTION
    WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('no date found');
   END;
-  FUNCTION  dd_payend_pf (p_id IN dd_payment.idpledge%type)  RETURN DATE IS last_date DATE;
+  FUNCTION dd_payend_pf (p_id IN dd_payment.idpledge%type)  RETURN DATE IS last_date DATE;
   BEGIN
-   SELECT max(paydate) INTO last_date FROM dd_payment WHERE idpledge = p_id;
-   last_date := last_day(max(last_date));
+   SELECT last_day(max(paydate)) INTO last_date FROM dd_payment WHERE idpledge = p_id;
   RETURN last_date;
   EXCEPTION
    WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('no date found');
@@ -385,31 +384,49 @@ CREATE OR REPLACE PACKAGE BODY pledge_pkg IS
 END;
 /
 -- anonymous block for testing
-call dbms_output.put_line(login_pkg.login_ck_pf('Crackj', 'flyby11')||'   '||login_pkg.pv_login_time);
+call dbms_output.put_line('idpledge:104 '|| pledge_pkg.dd_paydate1_pf(104) || ' '||pledge_pkg.dd_payend_pf(104) );
 /
-SELECT min(paydate) FROM dd_payment WHERE idpledge = 104;
-SELECT max(paydate) FROM dd_payment WHERE idpledge = 104;
 
 
 7-10 Adding a Pledge Display Procedure to the Package
-Require: whether item in stock (comparing the item quantity with the product stock amount)
+Require: change 7-9, make two functions private and add a procedure to print the name of donor and his every pledge
 Condition: (entered idbasket(idbasket == 6))
-From: BB_BASKETITEM, BB_PRODUCT
+From: dd_payment, dd_donor, dd_pledge
 
-CREATE OR REPLACE FUNCTION CK_SALE_SF 
-  (p_proid IN NUMBER,  p_date  IN DATE) 
-RETURN VARCHAR2 AS 
-  lv_start DATE;   
-  lv_end DATE;   
-  lv_str_val VARCHAR2(15); 
-BEGIN     
-  SELECT salestart, saleend INTO lv_start, lv_end FROM bb_product WHERE idproduct = p_proid;
-  IF p_date BETWEEN lv_start AND lv_end THEN
-    lv_str_val := 'On Sale!';   
-  ELSE lv_str_val := 'Great Deal!';   
-  END IF;    
-RETURN lv_str_val; 
-END CK_SALE_SF; 
+CREATE OR REPLACE PACKAGE pledge_pkg IS
+ PROCEDURE  DD_PLIST_PP (d_id IN DD_DONOR.IDDONOR%type);
+END;
+/  
+CREATE OR REPLACE PACKAGE BODY pledge_pkg IS
+  FUNCTION dd_paydate1_pf (p_id IN dd_payment.idpledge%type)  RETURN DATE IS first_date DATE;
+  BEGIN
+   SELECT trunc(min(paydate),'mm') INTO first_date FROM dd_payment WHERE idpledge = p_id;
+  RETURN first_date;
+  EXCEPTION
+   WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('no date found');
+  END;
+  FUNCTION dd_payend_pf (p_id IN dd_payment.idpledge%type)  RETURN DATE IS last_date DATE;
+  BEGIN
+   SELECT last_day(max(paydate)) INTO last_date FROM dd_payment WHERE idpledge = p_id;
+  RETURN last_date;
+  EXCEPTION
+   WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('no date found');
+  END;
+  PROCEDURE  DD_PLIST_PP (d_id IN DD_DONOR.iddonor%type) IS
+   name VARCHAR2(50);
+   CURSOR cur1 IS SELECT idpledge FROM dd_pledge WHERE iddonor = d_id GROUP BY idpledge;
+  BEGIN
+   SELECT CONCAT(firstname,lastname) INTO name from dd_donor WHERE iddonor = d_id;
+   FOR c1 IN cur1 LOOP
+     DBMS_OUTPUT.PUT_LINE(name||' '||d_id||' '||c1.idpledge||' '||dd_paydate1_pf(c1.idpledge)||' '||dd_payend_pf(c1.idpledge));
+   END LOOP;
+  EXCEPTION
+   WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('no date found');
+  END;
+END;
+/
+-- anonymous block for testing
+call pledge_pkg.DD_PLIST_PP(303);
 /
 
 
