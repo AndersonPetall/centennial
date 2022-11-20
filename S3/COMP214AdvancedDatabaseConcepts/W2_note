@@ -9,7 +9,7 @@ view
    simple view    use for DML
      定义: 单个表,不包含function 或者 group by
      EG: create view viewName as select id, name from tableName where id = 2;
-   complex view    may not use for DML
+   complex view    may not use for DML(instead of trigger)
      定义: 多个表,包含function 或者 group by
      EG: create view viewName as select id, name from tableName where id = 2 group by id;
    inline view 
