@@ -1,0 +1,237 @@
+9-1 Creating a Trigger to Handle Product Restocking
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+
+9-2 Updating Stock Information When a Product Request Is Filled
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+
+9-3 Updating the Stock Level If a Product Fulfillment Is Canceled
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+
+9-4 Updating Stock Levels When an Order Is Canceled
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+
+9-5 Processing Discounts
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+
+9-6 Using Triggers to Maintain Referential Integrity
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+
+9-7 Updating Summary Data Tables
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+
+9-8 Maintaining an Audit Trail of Product Table Changes
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+
+9-9 Tracking Pledge Payment Activity
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+
+9-10 Identifying First Pledges
+Require: create a procedure which change the productname according to idproduct
+Condition: (entered idproduct(idproduct == 1), entered productname)
+From: bb_product
+
+DROP PROCEDURE prodname_chg_sp;
+CREATE OR REPLACE PROCEDURE prodname_chg_sp
+  (p_id IN bb_product.idproduct%TYPE,
+   p_name IN bb_product.productname%TYPE)
+  IS
+BEGIN
+  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
+  COMMIT;
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+BEGIN
+ prodname_chg_sp(1,'CapressoBar Model #777');
+END;
+/
+SELECT idproduct, productname FROM bb_product WHERE idproduct
