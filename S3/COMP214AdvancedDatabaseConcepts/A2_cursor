@@ -1,0 +1,94 @@
+--4-9
+DECLARE
+  CURSOR cur IS 
+    SELECT IDPLEDGE, PLEDGEAMT, PAYMONTHS, PAYDATE, PAYAMT FROM DD_PLEDGE JOIN DD_PAYMENT USING(IDPLEDGE) ORDER BY IDPLEDGE, PAYDATE;
+  lv cur%ROWTYPE;
+  first  DD_PLEDGE.IDPLEDGE%TYPE :=0;
+BEGIN
+  OPEN cur;
+  LOOP 
+    FETCH cur INTO lv;
+    EXIT WHEN cur%NOTFOUND;
+    IF first != lv.IDPLEDGE THEN
+      first := lv.IDPLEDGE;
+      DBMS_OUTPUT.PUT_LINE(lv.IDPLEDGE||' '||lv.PLEDGEAMT||' '||lv.PAYMONTHS||' '
+    ||lv.PAYDATE||' '||lv.PAYAMT||' first payment');
+    ELSE DBMS_OUTPUT.PUT_LINE(lv.IDPLEDGE||' '||lv.PLEDGEAMT||' '||lv.PAYMONTHS||' '
+    ||lv.PAYDATE||' '||lv.PAYAMT);
+    END IF;
+  END LOOP;
+END;
+
+ 
+
+--4-11
+DECLARE
+  CURSOR cur(type DD_DONOR.TYPECODE%TYPE, amount DD_PLEDGE.PLEDGEAMT%TYPE) IS
+  SELECT FIRSTNAME, LASTNAME, PLEDGEAMT FROM DD_DONOR JOIN DD_PLEDGE USING(IDDONOR) 
+  WHERE TYPECODE = type AND PLEDGEAMT > amount; 
+BEGIN
+  FOR idx IN cur('I',250) LOOP
+   DBMS_OUTPUT.PUT_LINE('I '||idx.FIRSTNAME||' '||idx.LASTNAME||' '||idx.PLEDGEAMT);
+  END LOOP;
+  FOR idx IN cur('B',500) LOOP
+   DBMS_OUTPUT.PUT_LINE('B '||idx.FIRSTNAME||' '||idx.LASTNAME||' '||idx.PLEDGEAMT);
+  END LOOP;
+END;
+
+ 
+
+
+--4-12
+DECLARE
+  cur SYS_REFCURSOR;
+  id DD_DONOR.IDDONOR%TYPE := 301;
+  indicator CHAR := 'D';
+  TYPE detailtype IS RECORD(
+  detailpay DD_PAYMENT.PAYAMT%TYPE,
+  payid DD_PAYMENT.IDPAY%TYPE,
+  pledgeid DD_PAYMENT.IDPLEDGE%TYPE);
+  TYPE sumtype IS RECORD(
+  sumpay DD_PAYMENT.PAYAMT%TYPE,
+  pledgeid DD_PAYMENT.IDPLEDGE%TYPE);
+  detail detailtype;
+  summary sumtype;
+BEGIN
+  IF indicator = 'D' THEN
+    OPEN cur FOR SELECT PAYAMT,IDPAY,IDPLEDGE from DD_PAYMENT JOIN DD_PLEDGE USING (IDPLEDGE) WHERE IDDONOR = id;
+    LOOP
+      FETCH cur INTO detail;
+      EXIT WHEN cur%NOTFOUND;
+      DBMS_OUTPUT.PUT_LINE('D '||detail.detailpay||' '||detail.payid||' '||detail.pledgeid);
+    END LOOP;
+  ELSIF indicator = 'S' THEN
+    OPEN cur FOR SELECT SUM(PAYAMT),IDPLEDGE FROM DD_PAYMENT JOIN DD_PLEDGE USING (IDPLEDGE) WHERE IDDONOR = id GROUP BY IDPLEDGE;
+    LOOP
+      FETCH cur INTO summary;
+      EXIT WHEN cur%NOTFOUND;
+      DBMS_OUTPUT.PUT_LINE('S '||summary. sumpay||' '||summary.pledgeid);
+    END LOOP;
+  END IF;
+END;
+
+ 
+
+
+--4-13
+DECLARE
+  idinput DD_DONOR.IDDONOR%TYPE := 3011;
+  times NUMBER := 0;
+  exe1 EXCEPTION;
+BEGIN
+  SELECT COUNT(*) INTO times FROM DD_DONOR where DD_DONOR.IDDONOR = idinput;
+  IF times = 0 THEN
+    DBMS_OUTPUT.PUT_LINE(' This ID is available');
+  ELSE RAISE exe1;
+  END IF;
+EXCEPTION
+  WHEN exe1 THEN DBMS_OUTPUT.PUT_LINE('This ID is already assigned');
+END;
+
+ 
+
+
+
