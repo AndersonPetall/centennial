@@ -6,10 +6,10 @@ view
    create/replace [force] view viewName col1,col2,... as select col...from tableName [with check option] [with read only]
    insert viewName(col1,col2) values(value1, value2)
  type of view 
-   simple view 
+   simple view    use for DML
      定义: 单个表,不包含function 或者 group by
      EG: create view viewName as select id, name from tableName where id = 2;
-   complex view
+   complex view    may not use for DML
      定义: 多个表,包含function 或者 group by
      EG: create view viewName as select id, name from tableName where id = 2 group by id;
    inline view 
