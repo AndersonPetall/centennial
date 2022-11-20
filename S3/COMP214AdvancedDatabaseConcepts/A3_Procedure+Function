@@ -1,0 +1,94 @@
+某年内某人的 总total-总tax-总shipping
+--1
+CREATE OR REPLACE FUNCTION fun_total_1
+  (lv_idshopper IN bb_basket.idshopper%type,
+   lv_date IN bb_basket.dtcreated%type)
+RETURN bb_basket.total%type IS 
+  CURSOR cur1 IS SELECT total,tax,shipping FROM bb_basket WHERE idshopper = lv_idshopper AND EXTRACT(YEAR FROM dtcreated)= EXTRACT(YEAR FROM lv_date);
+  lv_total bb_basket.total%type;
+BEGIN
+  lv_total := 0;
+  FOR rec_cur IN cur1 LOOP                   
+    lv_total := lv_total + rec_cur.total - rec_cur.tax - rec_cur.shipping;
+  END LOOP; 
+  RETURN lv_total;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('no Shopper ID or Year found');
+  WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE('error');
+END;
+/
+SELECT fun_total_1(idshopper, dtcreated),idshopper,dtcreated FROM bb_basket;
+
+
+
+根据输入插入数据
+--2
+CREATE OR REPLACE PROCEDURE pro_add_2 
+  (lv_idstatus IN bb_basketstatus.idstatus%type,  
+   lv_dtstage IN bb_basketstatus.dtstage%type, 
+   lv_notes IN bb_basketstatus.notes%type)
+AS 
+BEGIN     
+  INSERT INTO bb_basketstatus(idstatus,dtstage,notes) VALUES(lv_idstatus,lv_dtstage,lv_notes);
+END;
+/
+EXECUTE pro_add_2(103,date'2022-07-17', 'comments at this stage');
+
+
+
+插入数据,返回是否插入成功的信息
+--3
+CREATE OR REPLACE FUNCTION fun_insert_3
+  (lv_idproduct IN bb_product.idproduct%type,
+   lv_price IN bb_product.price%type,
+   lv_quantity IN bb_product.stock%type)
+RETURN VARCHAR2 IS message VARCHAR2(20) := 'update succeeded';
+BEGIN
+  INSERT INTO bb_product(idproduct,price,stock) VALUES(lv_idproduct,lv_price,lv_quantity); 
+RETURN message;
+EXCEPTION
+  WHEN OTHERS THEN message := 'update failed'; RETURN message;
+END;
+/
+EXECUTE DBMS_OUTPUT.PUT_LINE(fun_insert_3(200,20,20));
+EXECUTE DBMS_OUTPUT.PUT_LINE(fun_insert_3(22,20,20));
+ 
+ 
+ 根据ID展示总pledgeamt,  
+ key: 两个table  +  $符号 to_char(number, '$9,999,999,99')
+--4
+CREATE OR REPLACE FUNCTION fun_total_4
+  (lv_idproj IN dd_project.idproj%type)
+RETURN dd_pledge.pledgeamt%type IS lv_total dd_pledge.pledgeamt%type := 0;
+BEGIN
+  SELECT SUM(pledgeamt) INTO lv_total FROM dd_pledge JOIN dd_project USING (idproj) WHERE idproj = lv_idproj;
+  RETURN lv_total;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('no data'); RETURN lv_total;
+END;
+/
+SELECT idproj, projname, to_char(fun_total_4(idproj), '$9,999,999,99') AS TOTAL from dd_project;
+
+INSERT INTO dd_project(idproj,projname,projfundgoal,projcoord) VALUES(505,'Covid-19 relief fund',2000,'Traci Brown');
+INSERT All INTO dd_pledge(idpledge,idproj) VALUES(113,505)
+       INTO dd_pledge(idpledge,idproj) VALUES(114,505)
+       SELECT * FROM DUAL;
+
+
+
+根据输入插入数据
+--5
+DROP PROCEDURE pro_add_5;
+CREATE OR REPLACE PROCEDURE pro_add_5
+  (lv_id IN bb_product.idproduct%TYPE,
+   lv_name IN bb_product.productname%TYPE,
+   lv_description IN bb_product.description%TYPE,
+   lv_image IN bb_product.productimage%TYPE, 
+   lv_price IN bb_product.price%TYPE,
+   lv_active IN bb_product.active%TYPE)
+  IS
+BEGIN
+  INSERT INTO bb_product(idproduct,productname,description,productimage,price,active) VALUES(lv_id,lv_name, lv_description,lv_image,lv_price,lv_active);
+END;
+/
+EXECUTE pro_add_5(21,'big tiger', 'really big', 'tiger.jpg',11.11,1);
