@@ -1,24 +1,46 @@
 8-1 Reviewing Dependency Information in the Data Dictionary
-Require: create a procedure which change the productname according to idproduct
-Condition: (entered idproduct(idproduct == 1), entered productname)
-From: bb_product
+代码:
+DESCRIBE USER_OBJECTS;
+显示:
+      Name              Null? Type          
+      ----------------- ----- ------------- 
+      OBJECT_NAME             VARCHAR2(128) 
+      SUBOBJECT_NAME          VARCHAR2(128) 
+      OBJECT_ID               NUMBER        
+      DATA_OBJECT_ID          NUMBER        
+      OBJECT_TYPE             VARCHAR2(23)  
+      CREATED                 DATE          
+      LAST_DDL_TIME           DATE          
+      TIMESTAMP               VARCHAR2(19)  
+      STATUS                  VARCHAR2(7)   
+      TEMPORARY               VARCHAR2(1)   
+      GENERATED               VARCHAR2(1)   
+      SECONDARY               VARCHAR2(1)   
+      NAMESPACE               NUMBER        
+      EDITION_NAME            VARCHAR2(128) 
+      SHARING                 VARCHAR2(13)  
+      EDITIONABLE             VARCHAR2(1)   
+      ORACLE_MAINTAINED       VARCHAR2(1)   
+代码:
+SELECT  OBJECT_NAME, STATUS, TIMESTAMP FROM USER_OBJECTS WHERE OBJECT_TYPE ='PROCEDURE';
+代码:
+DESCRIBE User_Dependencies;
+显示:
+      Name                 Null?    Type          
+      -------------------- -------- ------------- 
+      NAME                 NOT NULL VARCHAR2(128) 
+      TYPE                          VARCHAR2(18)  
+      REFERENCED_OWNER              VARCHAR2(128) 
+      REFERENCED_NAME               VARCHAR2(128) 
+      REFERENCED_TYPE               VARCHAR2(18)  
+      REFERENCED_LINK_NAME          VARCHAR2(128) 
+      SCHEMAID                      NUMBER        
+      DEPENDENCY_TYPE               VARCHAR2(4)   
 
-DROP PROCEDURE prodname_chg_sp;
-CREATE OR REPLACE PROCEDURE prodname_chg_sp
-  (p_id IN bb_product.idproduct%TYPE,
-   p_name IN bb_product.productname%TYPE)
-  IS
-BEGIN
-  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
-  COMMIT;
-END;
-/
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
-BEGIN
- prodname_chg_sp(1,'CapressoBar Model #777');
-END;
-/
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+代码:
+SELECT REFERENCED_NAME  FROM User_Dependencies;
+代码:
+SELECT name, type FROM user_dependencies WHERE referenced_name = 'BB_BASKET';
 
 
 
