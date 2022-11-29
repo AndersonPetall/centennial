@@ -95,143 +95,159 @@ SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
 
 
 9-5 Processing Discounts
-Require: create a procedure which change the productname according to idproduct
-Condition: (entered idproduct(idproduct == 1), entered productname)
-From: bb_product
+Require: create a package to store value(one number and one char),  when bb_product.value = 1 and package.number = 5, update package.char = 'Y'
+Condition: (updat bb_basket set value = 1 when id = ...)
+From: bb_basket
 
-DROP PROCEDURE prodname_chg_sp;
-CREATE OR REPLACE PROCEDURE prodname_chg_sp
-  (p_id IN bb_product.idproduct%TYPE,
-   p_name IN bb_product.productname%TYPE)
-  IS
-BEGIN
-  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
-  COMMIT;
-END;
+DROP PACKAGE disc_pkg;
+CREATE OR REPLACE PACKAGE disc_pkg IS   
+  pv_disc_num NUMBER;   
+  pv_disc_txt VARCHAR2(2); 
+END; 
+/  
+BEGIN   
+  disc_pkg.pv_disc_num :=5;   
+  disc_pkg.pv_disc_txt :='N'; 
+END; 
+/ 
+DROP TRIGGER bb_discount_trg;
+CREATE OR REPLACE TRIGGER bb_discount_trg  
+  AFTER UPDATE OF orderplaced ON BB_Basket  FOR EACH ROW  
+BEGIN    
+  IF :NEW.orderplaced=1 AND disc_pkg.pv_disc_num =5 THEN disc_pkg.pv_disc_txt :='Y';   
+  ELSE disc_pkg.pv_disc_txt :='N';  
+  END IF; 
+END; 
 /
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
-BEGIN
- prodname_chg_sp(1,'CapressoBar Model #777');
-END;
+UPDATE bb_basket SET orderplaced = 1 WHERE IDBASKET =13;
+UPDATE bb_basket SET orderplaced = 0 WHERE IDBASKET =13;
 /
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+call DBMS_OUTPUT.PUT_LINE(disc_pkg.pv_disc_txt);
+/
 
 
 
 9-6 Using Triggers to Maintain Referential Integrity
-Require: create a procedure which change the productname according to idproduct
-Condition: (entered idproduct(idproduct == 1), entered productname)
-From: bb_product
+Require: after updating one table, updating another two tables automatically
+Condition: (idproduct)
+From: bb_product (BB_BASKETITEM,BB_BASKETOPTION)
 
-DROP PROCEDURE prodname_chg_sp;
-CREATE OR REPLACE PROCEDURE prodname_chg_sp
-  (p_id IN bb_product.idproduct%TYPE,
-   p_name IN bb_product.productname%TYPE)
-  IS
+CREATE OR REPLACE TRIGGER UPdate_ID_No_TRG
+  AFTER UPDATE ON BB_PRODUCT FOR EACH ROW
 BEGIN
-  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
-  COMMIT;
+  UPDATE BB_BASKETITEM SET IDPRODUCT=:NEW.IDPRODUCT WHERE IDPRODUCT=:OLD.IDPRODUCT;
+  UPDATE BB_BASKETOPTION SET IDPRODUCT=:NEW.IDPRODUCT WHERE IDPRODUCT=:OLD.IDPRODUCT;
 END;
 /
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
-BEGIN
- prodname_chg_sp(1,'CapressoBar Model #777');
-END;
-/
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+UPDATE BB_PRODUCT SET IDPRODUCT = 22 WHERE IDPRODUCT = 7;
+ROLLBACK;
 
 
 
 9-7 Updating Summary Data Tables
-Require: create a procedure which change the productname according to idproduct
-Condition: (entered idproduct(idproduct == 1), entered productname)
-From: bb_product
+Require: update total sale and total quantity if ORDERPLACED = 1
+Condition: (ORDERPLACED = 1)
+From: bb_sales_sum
 
-DROP PROCEDURE prodname_chg_sp;
-CREATE OR REPLACE PROCEDURE prodname_chg_sp
-  (p_id IN bb_product.idproduct%TYPE,
-   p_name IN bb_product.productname%TYPE)
-  IS
-BEGIN
-  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
-  COMMIT;
+CREATE OR REPLACE TRIGGER BB_SALESUM_TRG 
+  AFTER UPDATE OF ORDERPLACED ON bb_sales_sum FOR EACH ROW 
+BEGIN     
+  IF :new.orderplaced=0 THEN UPDATE BB_SALES_SUM SET TOT_SALES=TOT_SALES-:old.TOTAL,TOT_QTY=TOT_QTY-1 WHERE idproduct = :new.idbasket;      
+  ELSE UPDATE BB_SALES_SUM SET TOT_SALES=TOT_SALES+:old.TOTAL,TOT_QTY=TOT_QTY+1 WHERE idproduct = :new.idbasket;     
+  END IF;
 END;
 /
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
-BEGIN
- prodname_chg_sp(1,'CapressoBar Model #777');
-END;
-/
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
 
 
 
 9-8 Maintaining an Audit Trail of Product Table Changes
-Require: create a procedure which change the productname according to idproduct
-Condition: (entered idproduct(idproduct == 1), entered productname)
-From: bb_product
+Require: when update bb_product, update corresding data in BB_PRODCHG_AUDIT
+Condition: (update bb_product)
+From: bb_product, BB_PRODCHG_AUDIT
 
-DROP PROCEDURE prodname_chg_sp;
-CREATE OR REPLACE PROCEDURE prodname_chg_sp
-  (p_id IN bb_product.idproduct%TYPE,
-   p_name IN bb_product.productname%TYPE)
-  IS
+SQL> CREATE TABLE BB_PRODCHG_AUDIT
+  (USER_ID       VARCHAR2(50),
+    CHG_DATE      DATE,
+    PRODUCT_ID    NUMBER (4,0),
+    PRODNAME_OLD  VARCHAR2(30),
+    PRODNAME_NEW  VARCHAR2(30),
+    PRICE_OLD     NUMBER (6,2),
+    PRICE_NEW     NUMBER (6,2),
+    SALESTART_OLD DATE,
+    SALESTART_NEW DATE,
+    SALEEND_OLD   DATE,
+    SALEEND_NEW   DATE,
+    SALEPRICE_OLD NUMBER (6,2),
+    SALEPRICE_NEW NUMBER (6,2));
+
+
+CREATE OR REPLACE TRIGGER bb_audit_trg AFTER
+  UPDATE OF PRODUCTNAME, PRICE, SALESTART, SALEEND, SALEPRICE ON BB_PRODUCT FOR EACH ROW 
 BEGIN
-  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
-  COMMIT;
+  INSERT INTO BB_PRODCHG_AUDIT VALUES
+    (SYS_CONTEXT ('USERENV','OS_USER'),
+      sysdate,
+      :new.idproduct,
+      :old.productname,
+      :new.productname,
+      :old.price,
+      :new.price,
+      :old.salestart,
+      :new.salestart,
+      :old.saleend,
+      :new.saleend,
+      :old.saleprice,
+      :new.saleprice);
 END;
-/
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
-BEGIN
- prodname_chg_sp(1,'CapressoBar Model #777');
-END;
-/
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+
+
+ALTER TRIGGER sales_date_trg DISABLE;
+SELECT * FROM BB_PRODCHG_AUDIT WHERE idProduct = 10;
+UPDATE bb_product SET salestart = '05-MAY-2012', saleend = '12-MAY-2012' saleprice = 9 WHERE idProduct = 10;
 
 
 
 9-9 Tracking Pledge Payment Activity
-Require: create a procedure which change the productname according to idproduct
-Condition: (entered idproduct(idproduct == 1), entered productname)
-From: bb_product
+Require: create table and sequence to record the change of dd_payment
+Condition: (change of dd_payment)
+From: dd_payment
 
-DROP PROCEDURE prodname_chg_sp;
-CREATE OR REPLACE PROCEDURE prodname_chg_sp
-  (p_id IN bb_product.idproduct%TYPE,
-   p_name IN bb_product.productname%TYPE)
-  IS
-BEGIN
-  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
-  COMMIT;
+CREATE TABLE DD_PAYTRACK 
+  (id NUMBER(10) NOT NULL, 
+  username VARCHAR2(100) NOT NULL, 
+  curr_date DATE default SYSDATETIME(), 
+  action VARCHAR2(10) NOT NULL 
+  CONSTRAINT books_pk PRIMARY KEY (id));      
+
+
+CREATE SEQUENCE DD_PTRACK_SEQ MINVALUE 1 MAXVALUE 99999 START WITH 1 INCREMENT BY 1 CACHE 20; 
+
+CREATE OR REPLACE TRIGGER PAYTRACK 
+  BEFORE DELETE OR INSERT OR UPDATE ON dd_payment FOR EACH ROW 
+DECLARE v_ChangeType VARCHAR(10); 
+BEGIN  
+  IF INSERTING THEN v_ChangeType := 'INSERT';
+  ELSIF UPDATING THEN v_ChangeType := 'UPDATE';
+  ELSE v_ChangeType := 'DELETE'; 
+  END IF;  
+  INSERT INTO DD_PAYTRACK VALUES (DD_PTRACK_SEQ.NEXTVAL,USER,SYSDATE,v_ChangeType);
 END;
 /
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
-BEGIN
- prodname_chg_sp(1,'CapressoBar Model #777');
-END;
-/
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
 
 
 
 9-10 Identifying First Pledges
-Require: create a procedure which change the productname according to idproduct
-Condition: (entered idproduct(idproduct == 1), entered productname)
-From: bb_product
+Require: judge whether pledges is the first pledges for someone
+Condition: ()
+From: dd_pledge
 
-DROP PROCEDURE prodname_chg_sp;
-CREATE OR REPLACE PROCEDURE prodname_chg_sp
-  (p_id IN bb_product.idproduct%TYPE,
-   p_name IN bb_product.productname%TYPE)
-  IS
+CREATE OR REPLACE TRIGGER FIRSTPLEDGE_TRG     
+  BEFORE INSERT ON DD_PLEDGE FOR EACH ROW 
+DECLARE TR_FIRSTPLEDGE DD_PLEDGE.FIRSTPLEDGE%TYPE; iddonor_count INTEGER; 
 BEGIN
-  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
-  COMMIT;
-END;
-/
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
-BEGIN
- prodname_chg_sp(1,'CapressoBar Model #777');
-END;
-/
-SELECT idproduct, productname FROM bb_product WHERE idproduct
+SELECT COUNT(iddonor) INTO iddonor_count FROM DD_PLEDGE WHERE iddonor = :NEW.iddonor;
+  IF iddonor_count > 0 THEN TR_FIRSTPLEDGE := 'N';    
+  ELSE TR_FIRSTPLEDGE := 'Y';
+  END IF;     
+  :NEW.FIRSTPLEDGE := TR_FIRSTPLEDGE; 
+END;     
