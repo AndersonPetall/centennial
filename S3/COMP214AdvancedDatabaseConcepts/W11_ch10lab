@@ -1,1 +1,393 @@
-111
+collection called 'restaurants'
+
+10-1 display all fields
+Require: display all the documents
+Condition: 
+code:
+  db.restaurants.find();
+
+
+
+10-2 display specific fields of a document
+Require: display the fields restaurant_id, name, borough and cuisine for all the document
+Condition: inlcude some  
+code:
+  db.restaurants.find({},{"restaurant_id" : 1,"name":1,"borough":1,"cuisine" :1});
+  
+
+
+10-3 display specific fields of a document
+Require: display the fields restaurant_id, name, borough and cuisine, but exclude the field _id for all the documents
+Condition: inlcude some and exclude some 
+code:
+  db.restaurants.find({},{"restaurant_id" : 1,"name":1,"borough":1,"cuisine" :1,"_id":0});
+  
+
+
+10-4 display specific fields of a document
+Require: display the fields restaurant_id, name, borough and zip code, but exclude the field _id for all the documents
+Condition: inlcude some and exclude some 
+code:
+  db.restaurants.find({},{"restaurant_id" : 1,"name":1,"borough":1,"address.zipcode" :1,"_id":0});
+  
+
+
+10-5 display fields of a document in certain item
+Require: display all the restaurant which is in the borough Bronx
+Condition: in certain item
+code:
+  db.restaurants.find({"borough": "Bronx"});
+  
+
+
+10-6 display specific fields of a document in certain item
+Require: display the first 5 restaurant which is in the borough Bronx
+Condition: in certain item with limit
+code:
+  db.restaurants.find({"borough": "Bronx"}).limit(5);
+  
+
+
+10-7 display specific fields of a document in certain item
+Require: display the next 5 restaurants after skipping first 5 which are in the borough Bronx
+Condition: in certain item with limit with skip
+code:
+ db.restaurants.find({"borough": "Bronx"}).skip(5).limit(5);
+  
+
+
+10-8 display fields of a document in certain condition
+Require: find the restaurants who achieved a score more than 90.
+Condition: in certain condition(score > 90)
+code:
+  db.restaurants.find({grades : { $elemMatch:{"score":{$gt : 90}}}});
+  
+
+
+10-9 display fields of a document in certain condition
+Require: find the restaurants that achieved a score, more than 80 but less than 100
+Condition: in certain condition(80 < score < 100)
+code:
+  db.restaurants.find({grades : { $elemMatch:{"score":{$gt : 80 , $lt :100}}}});;
+  
+
+
+10-10 display fields of a document in several conditions
+Require: find the restaurants which locate in latitude value less than -95.754168.
+Condition: in certain condition(address.coord < -95.754168)
+code:
+  db.restaurants.find({"address.coord" : {$lt : -95.754168}});;
+  
+
+
+10-11 display fields of a document in several conditions
+Require: find the restaurants that do not prepare any cuisine of 'American' and their grade score more than 70 and latitude less than -65.754168. 
+Condition: in several conditions(none cuisine in "American" && grades.score > 70 && address.coord < -65.754168) within $and 
+code:
+db.restaurants.find(
+               {$and:
+                    [
+                       {"cuisine" : {$ne :"American "}},
+                       {"grades.score" : {$gt : 70}},
+                       {"address.coord" : {$lt : -65.754168}}
+                    ]
+                }
+                    );
+  
+
+
+10-12 display fields of a document in several conditions
+Require: find the restaurants which do not prepare any cuisine of 'American' and achieved a score more than 70 and located in the longitude less than -65.754168.
+Condition: in several conditions(none cuisine in "American" && grades.score > 70 && address.coord < -65.754168) without $and
+code:
+  db.restaurants.find(
+                           {
+                             "cuisine" : {$ne : "American "},
+                             "grades.score" :{$gt: 70},
+                             "address.coord" : {$lt : -65.754168}
+                            }
+                     );
+  
+
+
+10-13 display fields of a document in several conditions and sort 
+Require: find the restaurants which do not prepare any cuisine of 'American' and achieved a grade point 'A' not belongs to the borough Brooklyn. The document must be displayed according to the cuisine in descending order. 
+Condition: in several conditions(none cuisine in "American" && grades.grade = 'A' && none borough in "Brooklyn") without sort
+code:
+  db.restaurants.find( {
+                             "cuisine" : {$ne : "American"},
+                             "grades.grade" :"A",
+                             "borough": {$ne : "Brooklyn"}
+                       } 
+                    ).sort({"cuisine":-1});
+  
+
+
+10-14 display specific fields of a document in certain condition
+Require: find the restaurant Id, name, borough and cuisine for those restaurants which contain 'Wil' as first three letters for its name. 
+Condition: in certain condition(Wil as first three letters for name)
+code:
+  db.restaurants.find(
+{name: /^Wil/},
+{
+"restaurant_id" : 1,
+"name":1,"borough":1,
+"cuisine" :1
+}
+);
+
+  
+
+
+10-15 display specific fields of a document in certain condition
+Require: find the restaurant Id, name, borough and cuisine for those restaurants which contain 'ces' as last three letters for its name. 
+Condition: in certain condition(ces as last three letters for name)
+code:
+  db.restaurants.find(
+{name: /ces$/},
+{
+"restaurant_id" : 1,
+"name":1,"borough":1,
+"cuisine" :1
+}
+);
+  
+
+
+10-16 display specific fields of a document in certain condition
+Require: find the restaurant Id, name, borough and cuisine for those restaurants which contain 'Reg' as three letters somewhere in its name. 
+Condition: in certain condition(reg is contained in name)
+code:
+  db.restaurants.find(
+{"name": /.*Reg.*/},
+{
+"restaurant_id" : 1,
+"name":1,"borough":1,
+"cuisine" :1
+}
+);
+  
+
+
+10-17 display specific fields of a document in several conditions
+Require: find the restaurants which belong to the borough Bronx and prepared either American or Chinese dish
+Condition: in several conditions("borough" in "Bronx" && "cuisine" in  ("American" or "Chinese"))
+code:
+  db.restaurants.find(
+{ 
+"borough": "Bronx" , 
+$or : [
+{ "cuisine" : "American " },
+{ "cuisine" : "Chinese" }
+] 
+} 
+);
+  
+
+
+10-18 display specific fields of a document in certain condition
+Require: find the restaurant Id, name, borough and cuisine for those restaurants which belong to the borough Staten Island or Queens or Bronxor Brooklyn.
+Condition: in certain condition("borough" in  ("Staten Island" or "Queens" or "Bronx" or "Brooklyn"))
+code:
+  db.restaurants.find(
+{"borough" :{$in :["Staten Island","Queens","Bronx","Brooklyn"]}},
+{
+"restaurant_id" : 1,
+"name":1,"borough":1,
+"cuisine" :1
+}
+);
+  
+
+
+10-19 display specific fields of a document in certain condition
+Require: find the restaurant Id, name, borough and cuisine for those restaurants which are not belonging to the borough Staten Island or Queens or Bronxor Brooklyn.
+Condition: in certain condition("borough" not in  ("Staten Island" or "Queens" or "Bronx" or "Brooklyn")
+code:
+  db.restaurants.find();db.restaurants.find(
+{"borough" :{$nin :["Staten Island","Queens","Bronx","Brooklyn"]}},
+{
+"restaurant_id" : 1,
+"name":1,"borough":1,
+"cuisine" :1
+}
+);
+
+
+10-20 display specific fields of a document in certain condition
+Require: find the restaurant Id, name, borough and cuisine for those restaurants which achieved a score which is not more than 10.
+Condition: in certain condition(grades.score <= 10)
+code:
+  db.restaurants.find(
+{"grades.score" : 
+{ $not: 
+{$gt : 10}
+}
+},
+{
+"restaurant_id" : 1,
+"name":1,"borough":1,
+"cuisine" :1
+}
+);
+  
+
+
+10-21 display specific fields of a document in several conditions
+Require: ind the restaurant Id, name, borough and cuisine for those restaurants which prepared dish except 'American' and 'Chinees' or restaurant's name begins with letter 'Wil'.
+Condition: in several conditions(Wil as first three letters for name || cuisine not in ("American" and "Chinese"))
+code:
+  db.restaurants.find(
+{$or: [
+  {name: /^Wil/}, 
+  {"$and": [
+       {"cuisine" : {$ne :"American "}}, 
+       {"cuisine" : {$ne :"Chinees"}}
+   ]}
+]}
+,{"restaurant_id" : 1,"name":1,"borough":1,"cuisine" :1}
+);
+  
+
+
+10-22 display specific fields of a document in several conditions
+Require: find the restaurant Id, name, and grades for those restaurants which achieved a grade of "A" and scored 11 on an ISODate "2014-08-11T00:00:00Z" among many of survey dates.
+Condition: in several conditions(grades.date is ISODate("2014-08-11T00:00:00Z") && grades.grade is "A" && grades.score is 11)
+code:
+  db.restaurants.find( 
+                {
+                 "grades.date": ISODate("2014-08-11T00:00:00Z"), 
+                 "grades.grade":"A" , 
+                 "grades.score" : 11
+                }, 
+                {"restaurant_id" : 1,"name":1,"grades":1}
+             );
+  
+
+
+10-23 display specific fields of a document which certain element in several conditions 
+Require: find the restaurant Id, name and grades for those restaurants where the 2nd element of grades array contains a grade of "A" and score 9 on an ISODate "2014-08-11T00:00:00Z".
+Condition: the second elemtn in several conditions (grades.1.date is ISODate("2014-08-11T00:00:00Z") && grades.1.grade is "A" && grades.1.score is 9)
+code:
+  db.restaurants.find( 
+                      { "grades.1.date": ISODate("2014-08-11T00:00:00Z"), 
+                        "grades.1.grade":"A" , 
+                        "grades.1.score" : 9
+                      }, 
+                       {"restaurant_id" : 1,"name":1,"grades":1}
+                   );
+  
+
+
+10-24 display specific fields of a document which certain element in several conditions 
+Require: find the restaurant Id, name, address and geographical location for those restaurants where 2nd element of coord array contains a value which is more than 42 and upto 52.
+Condition: the second elemtn in several conditions (42 < address.coord.1 <= 52) 
+code:
+  db.restaurants.find( 
+                      { 
+                        "address.coord.1": {$gt : 42, $lte : 52}
+                      },
+                        {"restaurant_id" : 1,"name":1,"address":1,"coord":1}
+                   );
+  
+
+
+10-25 display fields in certain order condition
+Require: arrange the name of the restaurants in ascending order
+Condition: in certain order condition (ascending order of the name)
+code:
+  db.restaurants.find().sort({"name":1});
+  
+
+
+10-26 display fields in certain order condition
+Require: arrange the name of the restaurants in descending order
+Condition: in certain order condition (descending order of the name)
+code:
+  db.restaurants.find().sort(
+                          {"name":-1}
+                          );
+  
+
+
+10-27 display fields in several order conditions
+Require: arranged the name of the cuisine in ascending order and for that same cuisine borough should be in descending order.
+Condition: in several order conditions (descending order of the borough && ascending order of the cuisine)
+code:
+  db.restaurants.find().sort(
+                           {"cuisine":1,"borough" : -1,}
+                          );
+
+  
+
+
+10-28 display whether one element is exist 
+Require: whether all the addresses contains the street or not
+Condition:  whether the element "address.street" is exist 
+code:
+  db.restaurants.find(
+                     {"address.street" : 
+                         { $exists : true } 
+                     } 
+                   );
+  
+
+
+10-29 display fields in certain condition
+Require: dsplay all documents in the restaurants collection where the coord field value is double
+Condition: in certain condition(type of address.coord is double)
+code:
+  db.restaurants.find(
+                    {"address.coord" : 
+                       {$type : 1}
+                    }
+                   );
+  
+
+
+10-30 display specific fields of a document in certain condition
+Require: select the restaurant Id, name and grades for those restaurants which returns 0 as a remainder after dividing the score by 7
+Condition: in certain condition(grades.score mod 7 is 0)
+code:
+  db.restaurants.find(
+                      {"grades.score" :
+                         {$mod : [7,0]}
+                      },
+                         {"restaurant_id" : 1,"name":1,"grades":1}
+                    );
+  
+
+
+10-31 display specific fields of a document in certain condition
+Require: find the restaurant name, borough, longitude and attitude and cuisine for those restaurants which contains 'mon' as three letters somewhere in its name. 
+Condition: in certain condition(name contain mon)
+code:
+  db.restaurants.find(
+                   { name : 
+                     { $regex : "mon.*", $options: "i" } 
+                   },
+                       {
+                         "name":1,
+                         "borough":1,
+                         "address.coord":1,
+                         "cuisine" :1
+                        }
+                   );
+  
+
+
+10-32 display specific fields of a document in certain condition
+Require: find the restaurant name, borough, longitude and latitude and cuisine for those restaurants which contain 'Mad' as first three letters of its name.
+Condition: in certain condition(Mad as first three letters of the name)
+code:
+db.restaurants.find(
+                   { name : 
+                     { $regex : /^Mad/i, } 
+                   },
+                       {
+                         "name":1,
+                         "borough":1,
+                         "address.coord":1,
+                         "cuisine" :1
+                        }
+                   );
