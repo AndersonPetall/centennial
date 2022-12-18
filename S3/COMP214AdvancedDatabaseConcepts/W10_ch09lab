@@ -3,22 +3,24 @@ Require: create a procedure which change the productname according to idproduct
 Condition: (entered idproduct(idproduct == 1), entered productname)
 From: bb_product
 
-DROP PROCEDURE prodname_chg_sp;
-CREATE OR REPLACE PROCEDURE prodname_chg_sp
-  (p_id IN bb_product.idproduct%TYPE,
-   p_name IN bb_product.productname%TYPE)
-  IS
-BEGIN
-  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
-  COMMIT;
+CREATE OR REPLACE TRIGGER bb_reorder_trg
+  AFTER UPDATE OF stock ON bb_product FOR EACH ROW 
+DECLARE
+  v_onorder_num NUMBER(4);
+ BEGIN
+  If :NEW.stock <= :NEW.reorder THEN
+   SELECT SUM(qty) INTO v_onorder_num FROM bb_product_request WHERE idProduct = :NEW.idProduct AND dtRecd IS NULL;
+   IF v_onorder_num IS NULL THEN v_onorder_num := 0; END IF;
+   IF v_onorder_num = 0 THEN
+     INSERT INTO bb_product_request (idRequest, idProduct, dtRequest, qty) VALUES (bb_prodreq_seq.NEXTVAL, :NEW.idProduct, SYSDATE, :NEW.reorder);
+   END IF;
+  END IF;
 END;
 /
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
-BEGIN
- prodname_chg_sp(1,'CapressoBar Model #777');
-END;
-/
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+SELECT stock, reorder FROM bb_product WHERE idProduct = 4;
+UPDATE bb_product SET stock = 25 WHERE idproduct = 4;
+SELECT * FROM bb_product_request;
+
 
 
 
@@ -27,22 +29,14 @@ Require: create a procedure which change the productname according to idproduct
 Condition: (entered idproduct(idproduct == 1), entered productname)
 From: bb_product
 
-DROP PROCEDURE prodname_chg_sp;
-CREATE OR REPLACE PROCEDURE prodname_chg_sp
-  (p_id IN bb_product.idproduct%TYPE,
-   p_name IN bb_product.productname%TYPE)
-  IS
+CREATE OR REPLACE TRIGGER BB_REQFILL_TRG
+  AFTER UPDATE OF DTRECD on bb_product_request FOR EACH ROW
 BEGIN
-  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
-  COMMIT;
+  UPDATE BB_PRODUCT SET STOCK = STOCK + :new.QTY WHERE idproduct = :new.idproduct;
 END;
 /
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
-BEGIN
- prodname_chg_sp(1,'CapressoBar Model #777');
-END;
-/
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
+INSERT INTO bb_product_request (idRequest, idProduct, dtRequest, qty) VALUES (3, 5, SYSDATE, 45);
+COMMIT;
 
 
 
@@ -51,22 +45,21 @@ Require: create a procedure which change the productname according to idproduct
 Condition: (entered idproduct(idproduct == 1), entered productname)
 From: bb_product
 
-DROP PROCEDURE prodname_chg_sp;
-CREATE OR REPLACE PROCEDURE prodname_chg_sp
-  (p_id IN bb_product.idproduct%TYPE,
-   p_name IN bb_product.productname%TYPE)
-  IS
+CREATE OR REPLACE TRIGGER BB_REQFILL_TRG
+AFTER UPDATE OF
+DTRECD ON BB_PRODUCT_REQUEST
+FOR EACH ROW
 BEGIN
-  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
-  COMMIT;
+    IF :new.dtrecd=NULL THEN
+        UPDATE BB_PRODUCT
+        SET STOCK = STOCK - :new.QTY
+        WHERE idproduct = :new.idproduct;
+    ELSE
+        UPDATE BB_PRODUCT
+        SET STOCK = STOCK + :new.QTY
+        WHERE idproduct = :new.idproduct;
+    END IF
 END;
-/
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
-BEGIN
- prodname_chg_sp(1,'CapressoBar Model #777');
-END;
-/
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
 
 
 
@@ -75,23 +68,21 @@ Require: create a procedure which change the productname according to idproduct
 Condition: (entered idproduct(idproduct == 1), entered productname)
 From: bb_product
 
-DROP PROCEDURE prodname_chg_sp;
-CREATE OR REPLACE PROCEDURE prodname_chg_sp
-  (p_id IN bb_product.idproduct%TYPE,
-   p_name IN bb_product.productname%TYPE)
-  IS
-BEGIN
-  UPDATE bb_product SET productname = p_name WHERE idproduct = p_id;
-  COMMIT;
+CREATE OR REPLACE TRIGGER bb_ordcancel_trg
+  AFTER INSERT ON bb_basketstatus FOR EACH ROW      
+WHEN (NEW.idstage = 4)       
+DECLARE CURSOR mack_trg_cursor IS SELECT i.quantity, i.idbasket, i.idproduct FROM bb_basketitem i;       
+BEGIN       
+  FOR rec_cur IN mack_trg_cursor       
+  LOOP       
+  UPDATE bb_product       
+  SET stock = stock + rec_cur.quantity WHERE rec_cur.idproduct = idproduct;       
+  UPDATE bb_basket SET orderplaced = 0 WHERE rec_cur.idbasket = :NEW.idbasket;       
+  END LOOP;
 END;
 /
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
-BEGIN
- prodname_chg_sp(1,'CapressoBar Model #777');
-END;
-/
-SELECT idproduct, productname FROM bb_product WHERE idproduct = 1;
-
+INSERT INTO bb_basketstatus (idStatus, idBasket, idStage, dtStage) VALUES (bb_status_seq.NEXTVAL, 6, 4, SYSDATE);
+ALTER TRIGGER bb_ordcancel_trg DISABLE;
 
 
 9-5 Processing Discounts
@@ -99,32 +90,25 @@ Require: create a package to store value(one number and one char),  when bb_prod
 Condition: (updat bb_basket set value = 1 when id = ...)
 From: bb_basket
 
-DROP PACKAGE disc_pkg;
 CREATE OR REPLACE PACKAGE disc_pkg IS   
   pv_disc_num NUMBER;   
   pv_disc_txt VARCHAR2(2); 
 END; 
 /  
-BEGIN   
-  disc_pkg.pv_disc_num :=5;   
-  disc_pkg.pv_disc_txt :='N'; 
+BEGIN   disc_pkg.pv_disc_num :=5;   disc_pkg.pv_disc_txt :='N'; 
 END; 
-/ 
-DROP TRIGGER bb_discount_trg;
+/  
+
 CREATE OR REPLACE TRIGGER bb_discount_trg  
   AFTER UPDATE OF orderplaced ON BB_Basket  FOR EACH ROW  
 BEGIN    
-  IF :NEW.orderplaced=1 AND disc_pkg.pv_disc_num =5 THEN disc_pkg.pv_disc_txt :='Y';   
-  ELSE disc_pkg.pv_disc_txt :='N';  
+  IF :NEW.orderplaced=1 AND :OLD.orderplaced=0 AND disc_pkg.pv_disc_num =5    
+    THEN disc_pkg.pv_disc_txt :='Y';   
+    ELSE disc_pkg.pv_disc_txt :='N';   
   END IF; 
 END; 
 /
-UPDATE bb_basket SET orderplaced = 1 WHERE IDBASKET =13;
-UPDATE bb_basket SET orderplaced = 0 WHERE IDBASKET =13;
-/
-call DBMS_OUTPUT.PUT_LINE(disc_pkg.pv_disc_txt);
-/
-
+UPDATE bb_basket SET orderplaced = 1 WHERE idBasket = 13;
 
 
 9-6 Using Triggers to Maintain Referential Integrity
@@ -136,11 +120,12 @@ CREATE OR REPLACE TRIGGER UPdate_ID_No_TRG
   AFTER UPDATE ON BB_PRODUCT FOR EACH ROW
 BEGIN
   UPDATE BB_BASKETITEM SET IDPRODUCT=:NEW.IDPRODUCT WHERE IDPRODUCT=:OLD.IDPRODUCT;
-  UPDATE BB_BASKETOPTION SET IDPRODUCT=:NEW.IDPRODUCT WHERE IDPRODUCT=:OLD.IDPRODUCT;
+  UPDATE bb_productoption SET IDPRODUCT=:NEW.IDPRODUCT WHERE IDPRODUCT=:OLD.IDPRODUCT;
 END;
 /
-UPDATE BB_PRODUCT SET IDPRODUCT = 22 WHERE IDPRODUCT = 7;
+UPDATE BB_PRODUCT SET IDPRODUCT = 22 WHERE IDPRODUCT = 7; COMMIT;
 ROLLBACK;
+DISABLE TRIGGER UPdate_ID_No_TRG ON BB_PRODUCT;
 
 
 
@@ -152,12 +137,14 @@ From: bb_sales_sum
 CREATE OR REPLACE TRIGGER BB_SALESUM_TRG 
   AFTER UPDATE OF ORDERPLACED ON bb_sales_sum FOR EACH ROW 
 BEGIN     
-  IF :new.orderplaced=0 THEN UPDATE BB_SALES_SUM SET TOT_SALES=TOT_SALES-:old.TOTAL,TOT_QTY=TOT_QTY-1 WHERE idproduct = :new.idbasket;      
-  ELSE UPDATE BB_SALES_SUM SET TOT_SALES=TOT_SALES+:old.TOTAL,TOT_QTY=TOT_QTY+1 WHERE idproduct = :new.idbasket;     
+  IF :new.orderplaced=0 THEN UPDATE bb_sales_sum SET TOT_SALES=TOT_SALES-:old.TOTAL,TOT_QTY=TOT_QTY-1 WHERE idproduct = :new.idbasket;      
+  ELSE UPDATE bb_sales_sum SET TOT_SALES=TOT_SALES+:old.TOTAL,TOT_QTY=TOT_QTY+1 WHERE idproduct = :new.idbasket;     
   END IF;
 END;
 /
-
+UPDATE bb_basket SET orderplaced = 0 WHERE idBasket = 3;
+UPDATE bb_basket SET orderplaced = 1 WHERE idBasket = 3;
+DISABLE TRIGGER BB_SALESUM_TRG ON bb_sales_sum;
 
 
 9-8 Maintaining an Audit Trail of Product Table Changes
@@ -178,12 +165,14 @@ SQL> CREATE TABLE BB_PRODCHG_AUDIT
     SALEEND_OLD   DATE,
     SALEEND_NEW   DATE,
     SALEPRICE_OLD NUMBER (6,2),
-    SALEPRICE_NEW NUMBER (6,2));
+    SALEPRICE_NEW NUMBER (6,2),
+    DML_operator_type  VARCHAR2(30));
 
 
 CREATE OR REPLACE TRIGGER bb_audit_trg AFTER
-  UPDATE OF PRODUCTNAME, PRICE, SALESTART, SALEEND, SALEPRICE ON BB_PRODUCT FOR EACH ROW 
+  UPDATE OR INSERT OR DELETE OF PRODUCTNAME, PRICE, SALESTART, SALEEND, SALEPRICE ON BB_PRODUCT FOR EACH ROW 
 BEGIN
+IF UPDATING THEN
   INSERT INTO BB_PRODCHG_AUDIT VALUES
     (SYS_CONTEXT ('USERENV','OS_USER'),
       sysdate,
@@ -197,14 +186,92 @@ BEGIN
       :old.saleend,
       :new.saleend,
       :old.saleprice,
-      :new.saleprice);
+      :new.saleprice,
+      "update");
+ELSIF INSERTING THEN
+  INSERT INTO BB_PRODCHG_AUDIT VALUES
+    (SYS_CONTEXT ('USERENV','OS_USER'),
+      sysdate,
+      :new.idproduct,
+      NULL,
+      :new.productname,
+      NULL,
+      :new.price,
+      NULL,
+      :new.salestart,
+      NULL,
+      :new.saleend,
+      NULL,
+      :new.saleprice,
+      "insert");
+ELSIF DELETING THEN
+  INSERT INTO BB_PRODCHG_AUDIT VALUES
+    (SYS_CONTEXT ('USERENV','OS_USER'),
+      sysdate,
+      NULL,
+      :old.productname,
+      NULL,
+      :old.price,
+      NULL,
+      :old.salestart,
+      NULL,
+      :old.saleend,
+      NULL,
+      :old.saleprice,
+      NULL,
+      "delete");
+END IF;
 END;
 
-
+ROLLBACK;
 ALTER TRIGGER sales_date_trg DISABLE;
 SELECT * FROM BB_PRODCHG_AUDIT WHERE idProduct = 10;
 UPDATE bb_product SET salestart = '05-MAY-2012', saleend = '12-MAY-2012' saleprice = 9 WHERE idProduct = 10;
 
+
+//other
+SQL> CREATE TABLE BB_PRODCHG_AUDIT
+  (
+    USER_ID       VARCHAR2(50),
+    CHG_DATE      DATE,
+    PRODUCT_ID    NUMBER (4,0),
+    PRODNAME_OLD  VARCHAR2(30),
+    PRODNAME_NEW  VARCHAR2(30),
+    PRICE_OLD     NUMBER (6,2),
+    PRICE_NEW     NUMBER (6,2),
+    SALESTART_OLD DATE,
+    SALESTART_NEW DATE,
+    SALEEND_OLD   DATE,
+    SALEEND_NEW   DATE,
+    SALEPRICE_OLD NUMBER (6,2),
+    SALEPRICE_NEW NUMBER (6,2)
+  );
+SQL> /
+SQL> CREATE OR REPLACE TRIGGER bb_audit_trg AFTER
+  UPDATE OF PRODUCTNAME,
+    PRICE,
+    SALESTART,
+    SALEEND,
+    SALEPRICE ON BB_PRODUCT FOR EACH ROW BEGIN
+  INSERT
+  INTO BB_PRODCHG_AUDIT VALUES
+    (
+      SYS_CONTEXT ('USERENV','OS_USER'),
+      sysdate,
+      :new.idproduct,
+      :old.productname,
+      :new.productname,
+      :old.price,
+      :new.price,
+      :old.salestart,
+      :new.salestart,
+      :old.saleend,
+      :new.saleend,
+      :old.saleprice,
+      :new.saleprice
+    );
+END;
+/
 
 
 9-9 Tracking Pledge Payment Activity
@@ -226,11 +293,11 @@ CREATE OR REPLACE TRIGGER PAYTRACK
   BEFORE DELETE OR INSERT OR UPDATE ON dd_payment FOR EACH ROW 
 DECLARE v_ChangeType VARCHAR(10); 
 BEGIN  
-  IF INSERTING THEN v_ChangeType := 'INSERT';
-  ELSIF UPDATING THEN v_ChangeType := 'UPDATE';
-  ELSE v_ChangeType := 'DELETE'; 
+  IF INSERTING THEN v_ChangeType := 'INSERT'; id := :new.idpay
+  ELSIF UPDATING THEN v_ChangeType := 'UPDATE'; id := :new.idpay
+  ELSE v_ChangeType := 'DELETE'; id := :old.idpay
   END IF;  
-  INSERT INTO DD_PAYTRACK VALUES (DD_PTRACK_SEQ.NEXTVAL,USER,SYSDATE,v_ChangeType);
+  INSERT INTO DD_PAYTRACK VALUES (id,DD_PTRACK_SEQ.NEXTVAL,USER,SYSDATE,v_ChangeType);
 END;
 /
 
